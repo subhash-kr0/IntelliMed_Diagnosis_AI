@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Breast Cancer Diagnosis Predictor</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Diabetes</title>
+    <link rel="stylesheet" type="text/css" href="../static/styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Breast Cancer Diagnosis Prediction</h1>
-        <form action="{{ url_for('predict') }}" method="POST">
+        <h1>Diabetes Diagnos/h1>
+        <form action="/predict" method="POST">
             {% for feature in features %}
             <div class="form-group">
                 <label>{{ feature.replace('_', ' ').title() }}:</label>
