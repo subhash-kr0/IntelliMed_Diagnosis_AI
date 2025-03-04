@@ -1,303 +1,329 @@
-# # Step 1: Import Required Libraries
-# import pandas as pd
-# import numpy as np
-# import matplotlib.pyplot as plt
-# import seaborn as sns
-# from sklearn.model_selection import train_test_split, GridSearchCV
-# from sklearn.preprocessing import StandardScaler
-# from sklearn.metrics import (accuracy_score, precision_score, recall_score, 
-#                              f1_score, roc_auc_score, confusion_matrix, 
-#                              ConfusionMatrixDisplay, RocCurveDisplay)
-# from sklearn.ensemble import RandomForestClassifier
-# from sklearn.linear_model import LogisticRegression
-# from sklearn.svm import SVC
-# from xgboost import XGBClassifier
-# from imblearn.over_sampling import SMOTE
-# import joblib
-
-# # Step 2: Load and Inspect Data
-# df = pd.read_csv('./data/diabetes.csv')
-# print(df.head())
-# print("\nDataset Info:")
-# print(df.info())
-# print("\nDescriptive Statistics:")
-# print(df.describe())
-
-# # Step 3: Exploratory Data Analysis (EDA)
-# # Check class distribution
-# plt.figure(figsize=(6,4))
-# sns.countplot(x='Outcome', data=df)
-# plt.title('Class Distribution')
-# plt.show()
-
-# # Plot numerical features distributions
-# num_cols = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 
-#  'BMI', 'DiabetesPedigreeFunction', 'Age', 'Outcome']
-# df[num_cols].hist(bins=20, figsize=(12,8))
-# plt.tight_layout()
-# plt.show()
-
-# # Plot categorical features
-# cat_cols = ['gender', 'hypertension', 'heart_disease', 'smoking_history']
-# fig, axes = plt.subplots(2, 2, figsize=(12,8))
-# for col, ax in zip(cat_cols, axes.flatten()):
-#     sns.countplot(x=col, hue='diabetes', data=df, ax=ax)
-# plt.tight_layout()
-# plt.show()
-
-# # Correlation matrix
-# corr_matrix = df.corr()
-# plt.figure(figsize=(10,8))
-# sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
-# plt.title('Correlation Matrix')
-# plt.show()
-
-# # Step 4: Data Preprocessing
-# # Handle categorical variables
-# df = pd.get_dummies(df, columns=['gender', 'smoking_history'], drop_first=True)
-
-# # Handle potential missing values represented as 0 in biological features
-# # Note: This dataset doesn't have explicit missing values, but we'll check for biological impossibilities
-# biological_cols = ['blood_glucose_level', 'bmi', 'HbA1c_level']
-# for col in biological_cols:
-#     df[col] = df[col].replace(0, np.nan)
-# df = df.dropna()
-
-# # Split data into features and target
-# X = df.drop('diabetes', axis=1)
-# y = df['diabetes']
-
-# # Handle class imbalance using SMOTE
-# smote = SMOTE(random_state=42)
-# X_res, y_res = smote.fit_resample(X, y)
-
-# # Split data into train/test sets
-# X_train, X_test, y_train, y_test = train_test_split(
-#     X_res, y_res, test_size=0.2, random_state=42, stratify=y_res)
-
-# # Feature Scaling
-# scaler = StandardScaler()
-# X_train_scaled = scaler.fit_transform(X_train)
-# X_test_scaled = scaler.transform(X_test)
-
-# # Step 5: Model Training and Evaluation
-# models = {
-#     'Logistic Regression': LogisticRegression(max_iter=1000),
-#     'Random Forest': RandomForestClassifier(),
-#     'XGBoost': XGBClassifier(),
-#     'SVM': SVC(probability=True)
-# }
-
-# results = {}
-
-# for name, model in models.items():
-#     model.fit(X_train_scaled, y_train)
-#     y_pred = model.predict(X_test_scaled)
-#     y_proba = model.predict_proba(X_test_scaled)[:,1]
-    
-#     metrics = {
-#         'accuracy': accuracy_score(y_test, y_pred),
-#         'precision': precision_score(y_test, y_pred),
-#         'recall': recall_score(y_test, y_pred),
-#         'f1': f1_score(y_test, y_pred),
-#         'roc_auc': roc_auc_score(y_test, y_proba)
-#     }
-    
-#     results[name] = metrics
-    
-#     # Plot confusion matrix
-#     cm = confusion_matrix(y_test, y_pred)
-#     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-#     disp.plot()
-#     plt.title(f'Confusion Matrix - {name}')
-#     plt.show()
-    
-#     # Plot ROC curve
-#     RocCurveDisplay.from_estimator(model, X_test_scaled, y_test)
-#     plt.title(f'ROC Curve - {name}')
-#     plt.show()
-
-# # Compare model performance
-# results_df = pd.DataFrame(results).T
-# print("\nModel Performance Comparison:")
-# print(results_df)
-
-# # Step 6: Hyperparameter Tuning (Example with Random Forest)
-# param_grid = {
-#     'n_estimators': [100, 200, 300],
-#     'max_depth': [None, 10, 20],
-#     'min_samples_split': [2, 5, 10]
-# }
-
-# rf = RandomForestClassifier()
-# grid_search = GridSearchCV(rf, param_grid, cv=5, scoring='roc_auc')
-# grid_search.fit(X_train_scaled, y_train)
-
-# best_rf = grid_search.best_estimator_
-# print(f"\nBest Random Forest Parameters: {grid_search.best_params_}")
-
-# # Step 7: Feature Importance Analysis
-# feature_importance = best_rf.feature_importances_
-# features = X.columns
-# importance_df = pd.DataFrame({'Feature': features, 'Importance': feature_importance})
-# importance_df = importance_df.sort_values('Importance', ascending=False)
-
-# plt.figure(figsize=(10,6))
-# sns.barplot(x='Importance', y='Feature', data=importance_df)
-# plt.title('Feature Importance')
-# plt.show()
-
-# # Step 8: Save Best Model
-# joblib.dump(best_rf, 'diabetes_model.pkl')
-# joblib.dump(scaler, 'scaler.pkl')
-
-
-
-
-
-# Step 1: Import Required Libraries
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import (accuracy_score, precision_score, recall_score, 
-                             f1_score, roc_auc_score, confusion_matrix, 
-                             ConfusionMatrixDisplay, RocCurveDisplay)
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
-from xgboost import XGBClassifier
-from imblearn.over_sampling import SMOTE
-import joblib
 
-# Step 2: Load and Inspect Data
-df = pd.read_csv('./data/diabetes.csv')
-print(df.head())
-print("\nDataset Info:")
-print(df.info())
-print("\nDescriptive Statistics:")
+import matplotlib.pyplot as plt
+
+import seaborn as sns
+
+
+
+# Load dataset (Note: Kaggle datasets require authentication)
+
+# Consider downloading the file locally if URL doesn't work
+
+df = pd.read_csv('data/Lung_Cancer_dataset.csv')  # Update with correct path/URL
+
+df.head(10)
+
+df.info()
+
+
+
+# Data Preprocessing
+
+from sklearn.preprocessing import LabelEncoder
+
+le = LabelEncoder()
+
+
+
+# Encode categorical columns (including binary features)
+
+categorical_cols = ['GENDER','SMOKING', 'YELLOW_FINGERS', 'ANXIETY',
+
+                    'PEER_PRESSURE', 'CHRONIC_DISEASE', 'FATIGUE', 'ALLERGY', 
+
+                    'WHEEZING', 'ALCOHOL_CONSUMING', 'COUGHING', 
+
+                    'SHORTNESS_OF_BREATH', 'SWALLOWING_DIFFICULTY', 
+
+                    'CHEST_PAIN', 'LUNG_CANCER']
+
+
+
+for col in categorical_cols:
+
+    df[col] = le.fit_transform(df[col])
+
+
+
+# Check encoded values
+
+for col in categorical_cols:
+
+    print(f"\n{col} value counts:")
+
+    print(df[col].value_counts())
+
+
+
+# Target distribution visualization
+
+plt.figure(figsize=(6, 4))
+
+plt.pie(df['LUNG_CANCER'].value_counts(), 
+
+        labels=['No Cancer' if x == 0 else 'Cancer' for x in df['LUNG_CANCER'].value_counts().index],
+
+        autopct='%1.1f%%')
+
+plt.title('Lung Cancer Distribution')
+
+plt.show()
+
+
+
+# Check duplicate rows (entire row duplicates)
+
+print(f"\nTotal duplicate rows: {df.duplicated().sum()}")
+
+
+
+# Data Summary
+
+print("\nData summary:")
+
 print(df.describe())
 
-# Step 3: Exploratory Data Analysis (EDA)
-# Check class distribution
-plt.figure(figsize=(6,4))
-sns.countplot(x='Outcome', data=df)
-plt.title('Class Distribution')
+
+
+# Visualization: Age distribution by cancer status
+
+plt.figure(figsize=(10, 6))
+
+sns.histplot(data=df, x='AGE', hue='LUNG_CANCER', element='step', bins=20, 
+
+             palette={0: 'skyblue', 1: 'salmon'})
+
+plt.title('Age Distribution by Lung Cancer Status')
+
+plt.xlabel('Age')
+
+plt.ylabel('Count')
+
+plt.legend(['Healthy', 'Cancer'])
+
 plt.show()
 
-# Plot numerical features distributions
-num_cols = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 
- 'BMI', 'DiabetesPedigreeFunction', 'Age']
 
-df[num_cols].hist(bins=20, figsize=(12,8))
+
+# Feature distributions
+
+fig, axes = plt.subplots(4, 4, figsize=(20, 20))
+
+axes = axes.flatten()
+
+
+
+for idx, col in enumerate(df.columns):
+
+    if col != 'LUNG_CANCER' and idx < len(axes):
+
+        sns.histplot(data=df, x=col, bins=20, ax=axes[idx], 
+
+                     hue='LUNG_CANCER', multiple="stack", 
+
+                     palette={0: 'skyblue', 1: 'salmon'})
+
+        axes[idx].set_title(f'{col} Distribution')
+
+        
+
 plt.tight_layout()
+
 plt.show()
+
+
+
+# Additional visualizations
+
+plt.figure(figsize=(10, 6))
+
+sns.boxplot(data=df, x='LUNG_CANCER', y='AGE', hue='GENDER', 
+
+            palette={0: 'lightblue', 1: 'pink'})
+
+plt.title('Age Distribution by Cancer Status and Gender')
+
+plt.xticks([0, 1], ['No Cancer', 'Cancer'])
+
+plt.xlabel('Lung Cancer Status')
+
+plt.legend(title='Gender', labels=['Male', 'Female'])
+
+plt.show()
+
+
 
 # Correlation matrix
-corr_matrix = df.corr()
-plt.figure(figsize=(10,8))
-sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
-plt.title('Correlation Matrix')
+
+plt.figure(figsize=(16, 12))
+
+corr = df.corr()
+
+sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", 
+
+            annot_kws={'size': 8}, linewidths=0.5)
+
+plt.title('Feature Correlation Matrix')
+
 plt.show()
 
-# Step 4: Data Preprocessing
-# Handle potential missing values represented as 0 in biological features
-biological_cols = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
-for col in biological_cols:
-    df[col] = df[col].replace(0, np.nan)
 
-df.dropna(inplace=True)
 
-# Split data into features and target
-X = df.drop('Outcome', axis=1)
-y = df['Outcome']
+# Model Training
 
-# Handle class imbalance using SMOTE
-smote = SMOTE(random_state=42)
-X_res, y_res = smote.fit_resample(X, y)
+from sklearn.model_selection import train_test_split
 
-# Split data into train/test sets
+from sklearn.preprocessing import StandardScaler
+
+from sklearn.metrics import accuracy_score, classification_report, precision_score, recall_score, f1_score, confusion_matrix
+
+
+
+# Prepare data using ACTUAL dataset (removed make_classification)
+
+X = df.drop(columns='LUNG_CANCER')
+
+y = df['LUNG_CANCER']
+
+
+
+# Split data
+
 X_train, X_test, y_train, y_test = train_test_split(
-    X_res, y_res, test_size=0.2, random_state=42, stratify=y_res)
 
-# Feature Scaling
+    X, y, test_size=0.2, random_state=42, stratify=y
+
+)
+
+
+
+# Scale numerical features
+
 scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
 
-# Step 5: Model Training and Evaluation
+X_train = scaler.fit_transform(X_train)
+
+X_test = scaler.transform(X_test)
+
+
+
+# Initialize models
+
+from sklearn.linear_model import LogisticRegression
+
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
+
+from xgboost import XGBClassifier
+
+from sklearn.neighbors import KNeighborsClassifier
+
+from sklearn.tree import DecisionTreeClassifier
+
+
+
 models = {
-    'Logistic Regression': LogisticRegression(max_iter=1000),
-    'Random Forest': RandomForestClassifier(),
-    'XGBoost': XGBClassifier(),
-    'SVM': SVC(probability=True)  # Ensure probability=True for ROC AUC calculation
+
+    "LogisticRegression": LogisticRegression(max_iter=1000),
+
+    "RandomForest": RandomForestClassifier(n_estimators=100, random_state=42),
+
+    "XGBClassifier": XGBClassifier(use_label_encoder=False, eval_metric='logloss'),
+
+    "KNN": KNeighborsClassifier(n_neighbors=5),
+
+    "DecisionTree": DecisionTreeClassifier(random_state=42),
+
+    "GradientBoosting": GradientBoostingClassifier(random_state=42),
+
+    "AdaBoost": AdaBoostClassifier(random_state=42)
+
 }
 
-results = {}
+
+
+# Model training and evaluation
+
+results = []
 
 for name, model in models.items():
-    model.fit(X_train_scaled, y_train)
-    y_pred = model.predict(X_test_scaled)
+
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
     
-    if hasattr(model, "predict_proba"):
-        y_proba = model.predict_proba(X_test_scaled)[:,1]
-    else:
-        y_proba = model.decision_function(X_test_scaled)  # For SVM
 
     metrics = {
-        'accuracy': accuracy_score(y_test, y_pred),
-        'precision': precision_score(y_test, y_pred),
-        'recall': recall_score(y_test, y_pred),
-        'f1': f1_score(y_test, y_pred),
-        'roc_auc': roc_auc_score(y_test, y_proba)
-    }
-    
-    results[name] = metrics
-    
-    # Plot confusion matrix
-    cm = confusion_matrix(y_test, y_pred)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-    disp.plot()
-    plt.title(f'Confusion Matrix - {name}')
-    plt.show()
-    
-    # Plot ROC curve
-    RocCurveDisplay.from_estimator(model, X_test_scaled, y_test)
-    plt.title(f'ROC Curve - {name}')
-    plt.show()
 
-# Compare model performance
-results_df = pd.DataFrame(results).T
+        'Model': name,
+
+        'Accuracy': accuracy_score(y_test, y_pred),
+
+        'Precision': precision_score(y_test, y_pred),
+
+        'Recall': recall_score(y_test, y_pred),
+
+        'F1': f1_score(y_test, y_pred)
+
+    }
+
+    results.append(metrics)
+
+    
+
+    print(f"\n{name} Classification Report:")
+
+    print(classification_report(y_test, y_pred))
+
+
+
+# Create results dataframe
+
+results_df = pd.DataFrame(results).sort_values('F1', ascending=False)
+
 print("\nModel Performance Comparison:")
+
 print(results_df)
 
-# Step 6: Hyperparameter Tuning (Example with Random Forest)
-param_grid = {
-    'n_estimators': [100, 200, 300],
-    'max_depth': [None, 10, 20],
-    'min_samples_split': [2, 5, 10]
-}
 
-rf = RandomForestClassifier()
-grid_search = GridSearchCV(rf, param_grid, cv=5, scoring='roc_auc')
-grid_search.fit(X_train_scaled, y_train)
 
-best_rf = grid_search.best_estimator_
-print(f"\nBest Random Forest Parameters: {grid_search.best_params_}")
+# Best model analysis (using XGBoost as example)
 
-# Step 7: Feature Importance Analysis
-feature_importance = best_rf.feature_importances_
-features = X.columns
-importance_df = pd.DataFrame({'Feature': features, 'Importance': feature_importance})
-importance_df = importance_df.sort_values('Importance', ascending=False)
+best_model = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
 
-plt.figure(figsize=(10,6))
-sns.barplot(x='Importance', y='Feature', data=importance_df)
-plt.title('Feature Importance')
+best_model.fit(X_train, y_train)
+
+y_pred = best_model.predict(X_test)
+
+
+
+# Confusion matrix
+
+cm = confusion_matrix(y_test, y_pred)
+
+plt.figure(figsize=(6, 4))
+
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+
+            xticklabels=['Predicted Healthy', 'Predicted Cancer'],
+
+            yticklabels=['Actual Healthy', 'Actual Cancer'])
+
+plt.title('XGBoost Confusion Matrix')
+
+plt.ylabel('True Label')
+
+plt.xlabel('Predicted Label')
+
 plt.show()
 
-# Step 8: Save Best Model
-joblib.dump(best_rf, './models/diabetes_model.pkl')
-joblib.dump(scaler, './models/scaler.pkl')
+
+
+
+# Add at the end of your training script
+import joblib
+
+# Save the best model and scaler
+joblib.dump(best_model, 'lung_cancer_model.pkl')
+joblib.dump(scaler, 'scaler.pkl')
