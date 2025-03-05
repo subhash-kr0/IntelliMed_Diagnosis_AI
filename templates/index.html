@@ -1,27 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Kidney Disease Predictor</title>
-    <link rel="stylesheet" type="text/css" href="../static/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liver Disease Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>Kidney Disease Diagnosis</h1>
-        <form action="/predict" method="POST">
-            {% for feature in features %}
+        <h1>Liver Disease Prediction</h1>
+        <form action="/predict" method="post">
             <div class="form-group">
-                <label>{{ feature.replace('_', ' ').title() }}:</label>
-                <input type="number" step="any" name="{{ feature }}" required>
+                <label>Age:</label>
+                <input type="number" name="Age" required>
             </div>
-            {% endfor %}
+            <div class="form-group">
+                <label>Gender:</label>
+                <select name="Gender" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Total Bilirubin:</label>
+                <input type="number" step="0.1" name="Total_Bilirubin" required>
+            </div>
+            <div class="form-group">
+                <label>Direct Bilirubin:</label>
+                <input type="number" step="0.1" name="Direct_Bilirubin" required>
+            </div>
+            <div class="form-group">
+                <label>Alkaline Phosphatase:</label>
+                <input type="number" name="Alkaline_Phosphatase" required>
+            </div>
+            <div class="form-group">
+                <label>Alamine Aminotransferase:</label>
+                <input type="number" name="Alamine_Aminotransferase" required>
+            </div>
+            <div class="form-group">
+                <label>Aspartate Aminotransferase:</label>
+                <input type="number" name="Aspartate_Aminotransferase" required>
+            </div>
+            <div class="form-group">
+                <label>Total Proteins:</label>
+                <input type="number" step="0.1" name="Total_Proteins" required>
+            </div>
+            <div class="form-group">
+                <label>Albumin:</label>
+                <input type="number" step="0.1" name="Albumin" required>
+            </div>
+            <div class="form-group">
+                <label>Albumin and Globulin Ratio:</label>
+                <input type="number" step="0.1" name="Albumin_and_Globulin_Ratio" required>
+            </div>
             <button type="submit">Predict</button>
         </form>
-        
-        {% if prediction_text %}
-        <div class="result">
-            <h3>{{ prediction_text }}</h3>
-        </div>
-        {% endif %}
     </div>
 </body>
 </html>

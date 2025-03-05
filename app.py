@@ -1,49 +1,50 @@
+from flask import Flask, render_template, request
 import joblib
 import numpy as np
-from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-# Load model and scaler
-model = joblib.load('./models/kidneyDisease.pkl')
-# scaler = joblib.load('./models/kidney_scaler.pkl')
-
-# Feature names (adjust based on your dataset columns)
-FEATURES = [
-    'age', 'bp', 'al', 'su', 'rbc', 'pc', 'pcc', 'ba', 'bgr', 'bu', 'sc', 'pot', 'wc', 'htn', 'dm', 'cad', 'pe', 'ane'
-]
+# Load model, scaler, and label encoder
+model = joblib.load('models/liver_model.joblib')
+scaler = joblib.load('models/scaler.joblib')
+le = joblib.load('models/label_encoder.joblib')
 
 @app.route('/')
 def home():
-    return render_template('index.html', features=FEATURES)
+    return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Get data from form
-        data = [float(request.form[feature]) for feature in FEATURES]
+        # Extract form data
+        gender = request.form['Gender']
+        features = [
+            float(request.form['Age']),
+            float(request.form['Total_Bilirubin']),
+            float(request.form['Direct_Bilirubin']),
+            float(request.form['Alkaline_Phosphatase']),
+            float(request.form['Alamine_Aminotransferase']),
+            float(request.form['Aspartate_Aminotransferase']),
+            float(request.form['Total_Proteins']),
+            float(request.form['Albumin']),
+            float(request.form['Albumin_and_Globulin_Ratio'])
+        ]
         
-        # Preprocess
-        # scaled_data = scaler.transform([data])
+        # Convert gender using label encoder
+        gender_encoded = le.transform([gender])[0]
+        features.insert(1, gender_encoded)  # Insert gender at index 1
         
-        data = np.array(data).reshape(1, -1)
-
-
+        # Scale features
+        final_features = scaler.transform(np.array(features).reshape(1, -1))
+        
         # Predict
-        prediction = model.predict(data)
-        probability = model.predict_proba(data)[0][1]
+        prediction = model.predict(final_features)
         
-        # Convert to diagnosis
-        diagnosis = "Kidney Disease Present" if prediction[0] == 1 else "Healthy"
-        
-        return render_template('index.html', 
-                             prediction_text=f'Diagnosis: {diagnosis} (Confidence: {probability:.2%})',
-                             features=FEATURES)
+        result = "Liver Disease Detected!" if prediction[0] == 1 else "No Liver Disease Detected"
+        return render_template('result.html', prediction=result)
     
     except Exception as e:
-        return render_template('index.html', 
-                             prediction_text=f'Error: {str(e)}',
-                             features=FEATURES)
+        return render_template('error.html', error=str(e))
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True)
