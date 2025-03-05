@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hypertension Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        form {
+            display: inline-block;
+            text-align: left;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enter Health Metrics</h1>
+    <form action="/predict" method="post">
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" required>
+
+        <label for="bmi">BMI:</label>
+        <input type="number" id="bmi" step="0.1" name="bmi" required>
+
+        <label for="systolic_bp">Systolic Blood Pressure:</label>
+        <input type="number" id="systolic_bp" name="systolic_bp" required>
+
+        <label for="diastolic_bp">Diastolic Blood Pressure:</label>
+        <input type="number" id="diastolic_bp" name="diastolic_bp" required>
+
+        <label for="cholesterol">Cholesterol:</label>
+        <input type="number" id="cholesterol" name="cholesterol" required>
+
+        <button type="submit">Predict</button>
+    </form>
+</body>
+</html>
