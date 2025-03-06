@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Thyroid Disease Prediction</title>
+</head>
+<body>
+    <h2>Enter Patient Details</h2>
+    <form action="/predict" method="post">
+        Age: <input type="text" name="age" required><br>
+        Sex (0: Female, 1: Male): <input type="text" name="sex" required><br>
+        TSH: <input type="text" name="TSH" required><br>
+        T3: <input type="text" name="T3" required><br>
+        TT4: <input type="text" name="TT4" required><br>
+        T4U: <input type="text" name="T4U" required><br>
+        FTI: <input type="text" name="FTI" required><br>
+        TBG: <input type="text" name="TBG" required><br>
+        On Thyroxine (0: No, 1: Yes): <input type="text" name="on_thyroxine" required><br>
+        Pregnant (0: No, 1: Yes): <input type="text" name="pregnant" required><br>
+        Referral Source (Encoded): <input type="text" name="referral_source" required><br>
+        Lithium Level: <input type="text" name="lithium" required><br>
+
+        <button type="submit">Predict</button>
+    </form>
+    
+    {% if prediction %}
+        <h3>Prediction: {{ prediction }}</h3>
+    {% endif %}
+</body>
+</html>
