@@ -10,3 +10,4 @@ catboost
 xgboost
 imblearn
 flask
+lightgbm
