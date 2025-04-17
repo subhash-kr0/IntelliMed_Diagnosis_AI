@@ -1,0 +1,5 @@
+{
+    "common_cold": ["runny nose", "cough", "sneezing"],
+    "migraine": ["headache", "nausea", "light sensitivity"],
+    "flu": ["fever", "body aches", "fatigue"]
+}
