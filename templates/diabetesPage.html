@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Diabetes</title>
+    <link rel="stylesheet" type="text/css" href="../static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Diabetes Diagnos/h1>
+        <form action="/predict" method="POST">
+            {% for feature in features %}
+            <div class="form-group">
+                <label>{{ feature.replace('_', ' ').title() }}:</label>
+                <input type="number" step="any" name="{{ feature }}" required>
+            </div>
+            {% endfor %}
+            <button type="submit">Predict</button>
+        </form>
+        
+        {% if prediction_text %}
+        <div class="result">
+            <h3>{{ prediction_text }}</h3>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
