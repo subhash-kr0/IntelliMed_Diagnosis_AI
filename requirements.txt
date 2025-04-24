@@ -6,8 +6,9 @@ scikit-learn
 matplotlib
 plotly
 streamlit
-tensorflow
+# tensorflow
 scikit-image
 xgboost
 joblib
+imblearn
 #-e .
