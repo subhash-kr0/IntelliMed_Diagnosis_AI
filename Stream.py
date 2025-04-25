@@ -64,10 +64,10 @@ st.markdown("""
         margin-bottom: 20px;
         border-radius: 10px 0 0 10px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        top: 3%;
+        top: 2%;
         position: fixed;
         right: 0;
-        width: 62%;
+        width: 75%;
         z-index: 1000;
     }
             
@@ -81,7 +81,7 @@ st.markdown("""
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         # top: 3%;
         position: fixed;
-        # width: 40%;
+        width: 40%;
         # height: 100px;
         z-index: 1000;
         bottom: 0;
@@ -211,45 +211,126 @@ if page == "home":
 
 
         
+        # st.markdown("""
+        #     <style>
+        #     # .chat-box {
+        #     #     height: 450px;
+        #     #     overflow-y: auto;
+        #     #     border: 2px solid #d3d3d3;
+        #     #     border-radius: 12px;
+        #     #     padding: 10px;
+        #     #     background-color: #f0f2f6;
+        #     #     margin-bottom: 10px;
+        #     # }
+        #     .message {
+        #         padding: 8px 12px;
+        #         border-radius: 8px;
+        #         # margin: 6px 0;
+        #         max-width: 80%;
+        #         word-wrap: break-word;
+        #         Margin-bottom: 50%;
+        #     }
+        #     .user {
+        #         background-color: #dcf8c6;
+        #         align-self: flex-end;
+        #         text-align: right;
+        #         margin-left: auto;
+        #     }
+        #     .bot {
+        #         background-color: #e2e3e5;
+        #         align-self: flex-start;
+        #         text-align: left;
+        #         margin-right: auto;
+        #     }
+        #     .chat-container {
+        #         display: flex;
+        #         flex-direction: column;
+        #         margin-bottom: 20%;
+        #     }
+        #     </style>
+        # """, unsafe_allow_html=True)
+
+        # # --- Title ---
+        # st.markdown("<h2 style='text-align: center; color: #10b981;'>💬 IntelliMed AI Chat</h2>", unsafe_allow_html=True)
+
+        # # --- Session State ---
+        # if "chat_history" not in st.session_state:
+        #     st.session_state.chat_history = []
+
+        # # --- Chat Display Container ---
+        # with st.container():
+        #     st.markdown("<div class='chat-box chat-container'>", unsafe_allow_html=True)
+            
+        #     for role, msg in st.session_state.chat_history:
+        #         if role == "user":
+        #             st.markdown(f"<div class='message user'>🧑‍💻 {msg}</div>", unsafe_allow_html=True)
+        #         else:
+        #             st.markdown(f"<div class='chat-box message bot'>🤖 {msg}</div>", unsafe_allow_html=True)
+        #     st.markdown("</div>", unsafe_allow_html=True)
+
+        # # --- Input Below Window ---
+        # user_input = st.chat_input("Type your message...")
+
+        # if user_input:
+        #     st.session_state.chat_history.append(("user", user_input))
+        #     with st.spinner("Thinking..."):
+        #         bot_reply = model.generate_content(user_input).text
+        #     st.session_state.chat_history.append(("bot", bot_reply))
+        #     st.rerun()  
+
+
+
+
+
+
+
+
+
+
+        
+
+
         st.markdown("""
             <style>
-            # .chat-box {
-            #     height: 450px;
-            #     overflow-y: auto;
-            #     border: 2px solid #d3d3d3;
-            #     border-radius: 12px;
-            #     padding: 10px;
-            #     background-color: #f0f2f6;
-            #     margin-bottom: 10px;
-            # }
+                    
+                    /* Move chat input box upward */
+                div[data-testid="stChatInput"] {
+                    margin-bottom: 8% !important; /* adjust this value as needed */
+                }
+
+            .chat-box {
+                height: 450px;
+                overflow-y: auto;
+                border: 2px solid #d3d3d3;
+                border-radius: 12px;
+                padding: 10px;
+                background-color: #f0f2f6;
+                margin-bottom: 5px;
+                display: flex;
+                # flex-direction: column;
+            }
             .message {
                 padding: 8px 12px;
                 border-radius: 8px;
-                margin: 6px 0;
                 max-width: 80%;
                 word-wrap: break-word;
+                margin-bottom: 10px;
             }
             .user {
                 background-color: #dcf8c6;
                 align-self: flex-end;
                 text-align: right;
-                margin-left: auto;
             }
             .bot {
                 background-color: #e2e3e5;
                 align-self: flex-start;
                 text-align: left;
-                margin-right: auto;
-            }
-            .chat-container {
-                display: flex;
-                flex-direction: column;
             }
             </style>
         """, unsafe_allow_html=True)
 
         # --- Title ---
-        st.markdown("<h2 style='text-align: center; color: #10b981;'>💬 IntelliMed AI Chat</h2>", unsafe_allow_html=True)
+        # st.markdown("<h2 style='text-align: center; color: #10b981;'>💬 IntelliMed AI Chat</h2>", unsafe_allow_html=True)
 
         # --- Session State ---
         if "chat_history" not in st.session_state:
@@ -257,13 +338,14 @@ if page == "home":
 
         # --- Chat Display Container ---
         with st.container():
-            st.markdown("<div class='chat-box chat-container'>", unsafe_allow_html=True)
+            chat_html = "<div class='chat-box'>"
             for role, msg in st.session_state.chat_history:
                 if role == "user":
-                    st.markdown(f"<div class='message user'>🧑‍💻 {msg}</div>", unsafe_allow_html=True)
+                    chat_html += f"<div class='message user'>🧑‍💻 {msg}</div>"
                 else:
-                    st.markdown(f"<div class='message bot'>🤖 {msg}</div>", unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+                    chat_html += f"<div class='message bot'>🤖 {msg}</div>"
+            chat_html += "</div>"
+            st.markdown(chat_html, unsafe_allow_html=True)
 
         # --- Input Below Window ---
         user_input = st.chat_input("Type your message...")
@@ -271,9 +353,13 @@ if page == "home":
         if user_input:
             st.session_state.chat_history.append(("user", user_input))
             with st.spinner("Thinking..."):
-                bot_reply = model.generate_content(user_input).text
+                bot_reply = model.generate_content(user_input).text  # Replace with your model: model.generate_content(user_input).text
             st.session_state.chat_history.append(("bot", bot_reply))
-            st.rerun()  
+            st.rerun()
+
+
+
+
 
 
     elif rd == "🩺 Disease Diagnose":
@@ -377,14 +463,6 @@ if page == "home":
 
 
 
-
-
-
-
-
-
-
-
 # ---- NAVIGATION ----
 query_params1 = st.query_params
 page1 = query_params.get("page1", "home1")
@@ -415,61 +493,6 @@ st.markdown(f"""
 
 
 
-# st.markdown("""
-#     <style>
-#     .chat-window {
-#         display: flex;
-#         flex-direction: column-reverse;
-#         height: 500px;
-#         border: 1px solid #ccc;
-#         border-radius: 12px;
-#         padding: 10px;
-#         overflow-y: auto;
-#         background-color: #f8f9fa;
-#         margin-bottom: 10px;
-#     }
-#     .user-message {
-#         background-color: #DCF8C6;
-#         border-radius: 10px;
-#         padding: 8px 12px;
-#         margin: 8px 0;
-#         max-width: 75%;
-#         align-self: flex-start;
-#     }
-#     .bot-message {
-#         background-color: #E4E6EB;
-#         border-radius: 10px;
-#         padding: 8px 12px;
-#         margin: 8px 0;
-#         max-width: 75%;
-#         align-self: flex-end;
-#     }
-#     </style>
-# """, unsafe_allow_html=True)
-
-# # --- Header / Title ---
-# st.markdown("<h2 style='text-align:center; color:#10b981;'>🤖 IntelliMed - ChatBot</h2>", unsafe_allow_html=True)
-
-# # --- Initialize Session State for Chat History ---
-# if "chat_history" not in st.session_state:
-#     st.session_state.chat_history = []
-
-# # --- Handle User Input ---
-# user_input = st.chat_input("Type your message here...")
-
-# if user_input:
-#     st.session_state.chat_history.append(("user", user_input))
-#     bot_response = model.generate_content(user_input).text
-#     st.session_state.chat_history.append(("bot", bot_response))
-
-# # --- Display Chat History in Reversed Order (Bottom-up) ---
-# st.markdown("<div class='chat-window'>", unsafe_allow_html=True)
-# for sender, message in reversed(st.session_state.chat_history):
-#     if sender == "user":
-#         st.markdown(f"<div class='user-message'><strong>🧑 You:</strong><br>{message}</div>", unsafe_allow_html=True)
-#     else:
-#         st.markdown(f"<div class='bot-message'><strong>🤖 Bot:</strong><br>{message}</div>", unsafe_allow_html=True)
-# st.markdown("</div>", unsafe_allow_html=True)
 
 
 
@@ -477,67 +500,3 @@ st.markdown(f"""
 
 
 
-
-# st.markdown("""
-#     <style>
-#     .chat-box {
-#         height: 450px;
-#         overflow-y: auto;
-#         border: 2px solid #d3d3d3;
-#         border-radius: 12px;
-#         padding: 10px;
-#         background-color: #f0f2f6;
-#         margin-bottom: 10px;
-#     }
-#     .message {
-#         padding: 8px 12px;
-#         border-radius: 8px;
-#         margin: 6px 0;
-#         max-width: 80%;
-#         word-wrap: break-word;
-#     }
-#     .user {
-#         background-color: #dcf8c6;
-#         align-self: flex-end;
-#         text-align: right;
-#         margin-left: auto;
-#     }
-#     .bot {
-#         background-color: #e2e3e5;
-#         align-self: flex-start;
-#         text-align: left;
-#         margin-right: auto;
-#     }
-#     .chat-container {
-#         display: flex;
-#         flex-direction: column;
-#     }
-#     </style>
-# """, unsafe_allow_html=True)
-
-# # --- Title ---
-# st.markdown("<h2 style='text-align: center; color: #10b981;'>💬 IntelliMed AI Chat</h2>", unsafe_allow_html=True)
-
-# # --- Session State ---
-# if "chat_history" not in st.session_state:
-#     st.session_state.chat_history = []
-
-# # --- Chat Display Container ---
-# with st.container():
-#     st.markdown("<div class='chat-box chat-container'>", unsafe_allow_html=True)
-#     for role, msg in st.session_state.chat_history:
-#         if role == "user":
-#             st.markdown(f"<div class='message user'>🧑‍💻 {msg}</div>", unsafe_allow_html=True)
-#         else:
-#             st.markdown(f"<div class='message bot'>🤖 {msg}</div>", unsafe_allow_html=True)
-#     st.markdown("</div>", unsafe_allow_html=True)
-
-# # --- Input Below Window ---
-# user_input = st.chat_input("Type your message...")
-
-# if user_input:
-#     st.session_state.chat_history.append(("user", user_input))
-#     with st.spinner("Thinking..."):
-#         bot_reply = model.generate_content(user_input).text
-#     st.session_state.chat_history.append(("bot", bot_reply))
-#     st.rerun()  
