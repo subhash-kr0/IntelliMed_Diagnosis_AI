@@ -11,4 +11,5 @@ scikit-image
 xgboost
 joblib
 imblearn
+google-generativeai
 #-e .

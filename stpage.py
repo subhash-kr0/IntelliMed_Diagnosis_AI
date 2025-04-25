@@ -2,95 +2,438 @@ import streamlit as st
 
 
 
-st.set_page_config(page_title="IntekkiMed", layout="wide")
 
-logo_url = "https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png"
 
-# ---- CSS Styling ----
-st.markdown("""
-    <style>
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        header {visibility: hidden;}
 
-        .block-container {
-            padding-top: 0rem !important;
-            position: relative;
-        }
 
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: rgba(0, 0, 0, 0.09);
-            padding: 10px 20px;
-            border-radius: 12px;
-            # border: 2px solid #A9A9A9;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
+# # ---- Logo URL ----
+# # logo_url = "https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg"  # example logo
 
-        .logo-container img {
-            height: 50px;
-        }
+# # ---- Tabs ----
+# tabs = ["Home", "About", "Projects", "Contact"]
 
-        .navbar {
-            display: flex;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+# # ---- Session Management ----
+# if "active_tab" not in st.session_state:
+#     st.session_state.active_tab = None
+# if "tab_index" not in st.session_state:
+#     st.session_state.tab_index = None
 
-        .navbar a {
-            color: #fff;
-            padding: 8px 16px;
-            text-decoration: none;
-            font-size: 16px;
-            font-weight: 500;
-            border-radius: 8px;
-            transition: 0.3s;
-            background-color: #FF00FF;
-            border: 2px solid #FF00FF;
-        }
+# # ---- CSS for Ultra-Compact & Responsive Navbar ----
+# st.markdown("""
+# <style>
+# /* Header */
+# .header-container {
+#     display: flex;
+#     align-items: center;
+#     justify-content: center;
+#     margin-bottom: 10px;
+# }
+# .logo-container img {
+#     height: 60px;
+#     max-width: 100%;
+# }
 
-        .navbar a:hover {
-            background-color: #FF00FF;
-        }
+# /* Make navbar compact */
+# .block-container > div > div > div > div {
+#     display: flex;
+#     justify-content: center;
+#     flex-wrap: wrap;
+#     gap: 10px;  /* 🔻 very minimal spacing */
+#     margin-top: 10px;
+#     margin-bottom: 10px;
+#     right: 10%;
+#     # position: fixed;
+# }
 
-        .navbar a.active {
-            background-color: #1f77b4;
-        }
+# /* Nav button styling */
+# button[kind="secondary"] {
+#     background-color: #f2f2f2;
+#     color: #333;
+#     padding: 6px 10px;
+#     border-radius: 5px;
+#     font-size: 13px;
+#     border: 1px solid #ccc;
+#     font-weight: 500;
+#     min-width: 80px;
+#     transition: all 0.3s ease-in-out;
+# }
 
-        @media screen and (max-width: 600px) {
-            .header-container {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+# /* Active tab */
+# button.nav-active {
+#     background-color: #1a73e8 !important;
+#     color: white !important;
+#     border: 1px solid #1a73e8;
+# }
 
-            .navbar {
-                justify-content: center;
-                width: 100%;
-            }
-        }
-    </style>
-""", unsafe_allow_html=True)
+# /* Mobile nav bar style */
+# @media (max-width: 768px) {
+#     .block-container > div > div > div > div {
+#         flex-direction: row;
+#         flex-wrap: wrap;
+#         justify-content: space-around;
+#         gap: 4px;
+#     }
+#     button[kind="secondary"] {
+#         width: 45vw;
+#         font-size: 12px;
+#         padding: 6px 6px;
+#         border-radius: 4px;
+#     }
+#     .logo-container img {
+#         height: 45px;
+#     }
+# }
+# </style>
+# """, unsafe_allow_html=True)
 
-# ---- Tabs ----
-tabs = ["Home", "About", "Projects", "Contact", "next", "next"]
+# # ---- Logo/Header ----
+# # st.markdown(f"""
+# # <div class="header-container">
+# #     <div class="logo-container">
+# #         # <img src="{logo_url}" alt="Logo">
+# #     </div>
+# # </div>
+# # """, unsafe_allow_html=True)
 
-query_params = st.query_params
-selected_tab = query_params.get("selected_tab", ["Home"])[0]
-st.session_state["selected_tab"] = selected_tab
+# # ---- Navbar Buttons ----
+# cols = st.columns(len(tabs))
+# for i, tab in enumerate(tabs):
+#     is_active = st.session_state.active_tab == tab and st.session_state.tab_index == i
+#     if cols[i].button(tab, key=f"btn_{tab}_{i}"):
+#         if is_active:
+#             st.session_state.active_tab = None
+#             st.session_state.tab_index = None
+#         else:
+#             st.session_state.active_tab = tab
+#             st.session_state.tab_index = i
 
-# ---- Custom HTML: Logo + Navbar ----
-nav_html = f"""
-<div class="header-container">
-    <div class="logo-container">
-        <img src="{logo_url}" alt="Logo">
-    </div>
-    <div class="navbar">
-"""
+# # ---- Content Display ----
+# if st.session_state.active_tab:
+#     st.title(f"{st.session_state.active_tab} Page")
+
+#     if st.session_state.active_tab == "Home":
+#         st.write("🏠 Welcome to the Home tab.")
+#     elif st.session_state.active_tab == "About":
+#         st.write("📖 This is the About section.")
+#     elif st.session_state.active_tab == "Projects":
+#         st.write("🛠️ Here are some cool projects.")
+#     elif st.session_state.active_tab == "Contact":
+#         st.write("📩 Get in touch with us!")
+
+
+
+
+
+
+
+
+
+# # ---- Logo URL ----
+# # logo_url = "https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg"  # example logo
+
+# # ---- Tabs ----
+# tabs = ["Home", "About", "Projects", "Contact"]
+
+# # ---- Session Management ----
+# if "active_tab" not in st.session_state:
+#     st.session_state.active_tab = None
+# if "tab_index" not in st.session_state:
+#     st.session_state.tab_index = None
+
+# # ---- CSS for Ultra-Compact & Responsive Navbar ----
+# st.markdown("""
+# <style>
+# /* Header */
+# .header-container {
+#     display: flex;
+#     align-items: center;
+#     justify-content: center;
+#     margin-bottom: 10px;
+# }
+# .logo-container img {
+#     height: 60px;
+#     max-width: 100%;
+# }
+
+# /* Make navbar compact */
+# .block-container > div > div > div > div {
+#     display: flex;
+#     justify-content: center;
+#     flex-wrap: wrap;
+#     gap: 10px;  /* 🔻 very minimal spacing */
+#     margin-top: 10px;
+#     margin-bottom: 10px;
+#     right: 10%;
+#     position: fixed;
+            
+# }
+
+# /* Nav button styling */
+# button[kind="secondary"] {
+#     background-color: #f2f2f2;
+#     color: #333;
+#     padding: 6px 10px;
+#     border-radius: 5px;
+#     font-size: 13px;
+#     border: 1px solid #ccc;
+#     font-weight: 500;
+#     min-width: 80px;
+#     transition: all 0.3s ease-in-out;
+# }
+
+# /* Active tab */
+# button.nav-active {
+#     background-color: #1a73e8 !important;
+#     color: white !important;
+#     border: 1px solid #1a73e8;
+# }
+
+# /* Mobile nav bar style */
+# @media (max-width: 768px) {
+#     .block-container > div > div > div > div {
+#         flex-direction: row;
+#         flex-wrap: wrap;
+#         justify-content: space-around;
+#         gap: 4px;
+#     }
+#     button[kind="secondary"] {
+#         width: 45vw;
+#         font-size: 12px;
+#         padding: 6px 6px;
+#         border-radius: 4px;
+#     }
+#     .logo-container img {
+#         height: 45px;
+#     }
+# }
+# </style>
+# """, unsafe_allow_html=True)
+
+# # ---- Logo/Header ----
+# # st.markdown(f"""
+# # <div class="header-container">
+# #     <div class="logo-container">
+# #         <img src="{logo_url}" alt="Logo">
+# #     </div>
+# # </div>
+# # """, unsafe_allow_html=True)
+
+# # ---- Navbar Buttons ----
+# cols = st.columns(len(tabs))
+# for i, tab in enumerate(tabs):
+#     is_active = st.session_state.active_tab == tab and st.session_state.tab_index == i
+#     if cols[i].button(tab, key=f"btn_{tab}_{i}"):
+#         if is_active:
+#             st.session_state.active_tab = None
+#             st.session_state.tab_index = None
+#         else:
+#             st.session_state.active_tab = tab
+#             st.session_state.tab_index = i
+
+# # ---- Content Display ----
+# if st.session_state.active_tab:
+#     st.title(f"{st.session_state.active_tab} Page")
+
+#     if st.session_state.active_tab == "Home":
+#         st.write("🏠 Welcome to the Home tab.")
+#     elif st.session_state.active_tab == "About":
+#         st.write("📖 This is the About section.")
+#     elif st.session_state.active_tab == "Projects":
+#         st.write("🛠️ Here are some cool projects.")
+#     elif st.session_state.active_tab == "Contact":
+#         st.write("📩 Get in touch with us!")
+#     elif st.session_state.active_tab == "next":
+#         st.write("⏭️ This is the next page content.")
+
+
+
+
+
+
+
+
+
+
+
+
+# st.set_page_config(page_title="IntekkiMed", layout="wide")
+
+# logo_url = "https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png"
+
+# # ---- CSS Styling ----
+# st.markdown("""
+#     <style>
+#         #MainMenu {visibility: hidden;}
+#         footer {visibility: hidden;}
+#         header {visibility: hidden;}
+
+#         .block-container {
+#             padding-top: 0rem !important;
+#             position: relative;
+#         }
+
+#         .header-container {
+#             display: flex;
+#             justify-content: space-between;
+#             align-items: center;
+#             background-color: rgba(0, 0, 0, 0.09);
+#             padding: 10px 20px;
+#             border-radius: 12px;
+#             # border: 2px solid #A9A9A9;
+#             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+#             margin-bottom: 20px;
+#             flex-wrap: wrap;
+#         }
+
+#         .logo-container img {
+#             height: 40px;
+#         }
+
+#         .navbar {
+#             display: flex;
+#             justify-content: flex-end;
+#             flex-wrap: wrap;
+#             gap: 10px;
+#         }
+
+#         .navbar a {
+#             color: #fff;
+#             padding: 8px 16px;
+#             text-decoration: none;
+#             font-size: 16px;
+#             font-weight: 500;
+#             border-radius: 8px;
+#             transition: 0.3s;
+#             background-color: #FF00FF;
+#             border: 2px solid #FF00FF;
+#             display: flex;
+#             justify-content: flex-end;
+#             flex-wrap: wrap;
+#             gap: 10px;
+#         }
+
+#         .navbar a:hover {
+#             background-color: #FF00FF;
+#         }
+
+#         .navbar a.active {
+#             background-color: #1f77b4;
+#         }
+
+#         @media screen and (max-width: 600px) {
+#             .header-container {
+#                 flex-direction: column;
+#                 align-items: flex-start;
+#             }
+
+#             .navbar {
+#                 justify-content: center;
+#                 width: 100%;
+#             }
+#         }
+#     </style>
+# """, unsafe_allow_html=True)
+
+# # ---- Tabs ----
+# tabs = ["Home", "About", "Projects", "Contact", "next", "next"]
+
+# query_params = st.query_params
+# selected_tab = query_params.get("selected_tab", ["Home"])[0]
+# st.session_state["selected_tab"] = selected_tab
+
+# # ---- Custom HTML: Logo + Navbar ----
+# nav_html = f"""
+# <div class="header-container">
+#     <div class="logo-container">
+#         <img src="{logo_url}" alt="Logo">
+#     </div>
+#     <div class="navbar">
+# """
+
+# for tab in tabs:
+#     active_class = "active" if tab == selected_tab else ""
+#     nav_html += f'<a href="/?selected_tab={tab}" class="{active_class}">{tab}</a>'
+
+# nav_html += "</div></div>"
+
+
+# st.markdown(nav_html, unsafe_allow_html=True)
+
+# ---- Tab Content ----
+# st.title(f"{selected_tab} Page")
+# if selected_tab == "Home":
+#     st.write("🏠 Welcome to the Home tab.")
+# elif selected_tab == "About":
+#     st.write("📖 This is the About section.")
+# elif selected_tab == "Projects":
+#     st.write("🛠️ Here are some cool projects.")
+# elif selected_tab == "Contact":
+#     st.write("📩 Get in touch with us!")
+
+
+
+
+
+
+
+# # ---- Tabs ----
+# tabs = ["Home", "About", "Projects", "Contact", "next", "next"]
+
+# # ---- Session Management for Toggle ----
+# if "active_tab" not in st.session_state:
+#     st.session_state.active_tab = None
+
+# # ---- Header Section with Logo ----
+# st.markdown(f"""
+# <div class="header-container">
+#     <div class="logo-container">
+#         <img src="{logo_url}" alt="Logo">
+#     </div>
+# </div>
+# """, unsafe_allow_html=True)
+
+# # Navbar Buttons
+# cols = st.columns(len(tabs))
+# for i, tab in enumerate(tabs):
+#     btn_style = "nav-button"
+#     if st.session_state.active_tab == tab and st.session_state.tab_index == i:
+#         btn_style += " nav-active"
+
+#     if cols[i].button(tab, key=f"btn_{tab}_{i}"):
+#         if st.session_state.active_tab == tab and st.session_state.tab_index == i:
+#             st.session_state.active_tab = None
+#             st.session_state.tab_index = None
+#         else:
+#             st.session_state.active_tab = tab
+#             st.session_state.tab_index = i
+
+
+# # ---- Display Content ----
+# if st.session_state.active_tab:
+#     st.title(f"{st.session_state.active_tab} Page")
+
+#     if st.session_state.active_tab == "Home":
+#         st.write("🏠 Welcome to the Home tab.")
+#     elif st.session_state.active_tab == "About":
+#         st.write("📖 This is the About section.")
+#     elif st.session_state.active_tab == "Projects":
+#         st.write("🛠️ Here are some cool projects.")
+#     elif st.session_state.active_tab == "Contact":
+#         st.write("📩 Get in touch with us!")
+#     elif st.session_state.active_tab == "next":
+#         st.write("⏭️ This is the next page content.")
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -176,25 +519,7 @@ st.markdown("""
 
 
 
-for tab in tabs:
-    active_class = "active" if tab == selected_tab else ""
-    nav_html += f'<a href="/?selected_tab={tab}" class="{active_class}">{tab}</a>'
 
-nav_html += "</div></div>"
-
-
-st.markdown(nav_html, unsafe_allow_html=True)
-
-# ---- Tab Content ----
-# st.title(f"{selected_tab} Page")
-# if selected_tab == "Home":
-#     st.write("🏠 Welcome to the Home tab.")
-# elif selected_tab == "About":
-#     st.write("📖 This is the About section.")
-# elif selected_tab == "Projects":
-#     st.write("🛠️ Here are some cool projects.")
-# elif selected_tab == "Contact":
-#     st.write("📩 Get in touch with us!")
     
 
 # ---- Sidebar ----
@@ -248,16 +573,16 @@ if "Diabetes" in page:
         st.warning("🔁 Please refresh the page to reset all values.")
 
 
-st.title(f"{selected_tab} Page")
-if selected_tab == "Home":
-    if "Diabetes" in page:
-        st.write("🏠 Welcome to the Home tab.")
-elif selected_tab == "About":
-    st.write("📖 This is the About section.")
-elif selected_tab == "Projects":
-    st.write("🛠️ Here are some cool projects.")
-elif selected_tab == "Contact":
-    st.write("📩 Get in touch with us!")
+# st.title(f"{selected_tab} Page")
+# if selected_tab == "Home":
+#     if "Diabetes" in page:
+#         st.write("🏠 Welcome to the Home tab.")
+# elif selected_tab == "About":
+#     st.write("📖 This is the About section.")
+# elif selected_tab == "Projects":
+#     st.write("🛠️ Here are some cool projects.")
+# elif selected_tab == "Contact":
+#     st.write("📩 Get in touch with us!")
 
 
 
