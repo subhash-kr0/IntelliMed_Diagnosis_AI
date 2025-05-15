@@ -1,0 +1,16 @@
+Dataset: ./data/processed\diabetes_cleaned.csv
+Target Column: Outcome
+Task Type: Classification
+Best Model: LogisticRegression
+Best Params: {'model__C': 1.0}
+CV Score: 0.7688
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.80      0.83      0.81        99
+           1       0.67      0.62      0.64        55
+
+    accuracy                           0.75       154
+   macro avg       0.73      0.72      0.73       154
+weighted avg       0.75      0.75      0.75       154

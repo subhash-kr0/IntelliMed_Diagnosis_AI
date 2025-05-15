@@ -1,23 +1,26 @@
 import streamlit as st
 import numpy as np
 import joblib
-
+import pandas as pd
+import base64
 import google.generativeai as genai
 import os
+import json
+from openai import OpenAI
 
-st.set_page_config(page_title="ChatBot", layout="centered")
+# ---------------------- Setup Section ----------------------
+st.set_page_config(
+    layout='wide',
+    page_icon='🧬'
+)
 
-# Fetch the Gemini API key securely
+# Fetch the API keys securely
 gemini_key = st.secrets["api_keys"]["gemini"]
-openai_key = st.secrets["api_keys"]["openai"]
 
-# Set up the API client for Gemini using the key
+# Configure Gemini and OpenAI
 genai.configure(api_key=gemini_key)
-model = genai.GenerativeModel(model_name="models/gemini-2.5-flash-preview-04-17") 
 
-
-
-# Load models & scalers (same as before)
+# Load Models & Scalers
 diabetes_model = joblib.load('./models/diabetes_model.pkl')
 diabetes_scaler = joblib.load('./models/diabetes_scaler.pkl')
 
@@ -38,305 +41,276 @@ BREAST_FEATURES = ['mean_radius', 'mean_texture', 'mean_perimeter', 'mean_area',
 LUNG_FEATURES = ['GENDER', 'AGE', 'SMOKING', 'YELLOW_FINGERS', 'ANXIETY', 'PEER_PRESSURE', 'CHRONIC_DISEASE', 'FATIGUE', 'ALLERGY', 'WHEEZING', 'ALCOHOL_CONSUMING', 'COUGHING', 'SHORTNESS_OF_BREATH', 'SWALLOWING_DIFFICULTY', 'CHEST_PAIN']
 LIVER_FEATURES = ['Age', 'Gender', 'Total_Bilirubin', 'Alkaline_Phosphotase', 'Alamine_Aminotransferace', 'Aspartate_Amino', 'Protien', 'Albumin', 'Albumin_Globulin_ratio']
 
-# CSS styles for navbar and sidebar
-st.markdown("""
-    <style>
-    #MainMenu, footer, header {visibility: hidden;}
-    [data-testid="stSidebar"] {
-        background: linear-gradient(to bottom, #0f172a, #1e293b);
-        color: white;
-        padding-top: 1.5rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-    .sidebar-title {
-        text-align: center;
-        font-size: 20px;
-        font-weight: 600;
-        margin-top: 5px;
-        margin-bottom: 25px;
-        color: #10b981;
-    }
-    .topnav {
-        background-color: #0f172a;
-        overflow: hidden;
-        padding: 10px 20px;
-        margin-bottom: 20px;
-        border-radius: 10px 0 0 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        top: 2%;
-        position: fixed;
-        right: 0;
-        width: 75%;
-        z-index: 1000;
-    }
-            
+# ---------------------- Helper Functions ----------------------
 
-        .topnav1 {
-        background-color: #0f172a;
-        overflow: hidden;
-        padding: 10px 20px;
-        margin-bottom: 20px;
-        border-radius: 10px 10px 10px 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        # top: 3%;
-        position: fixed;
-        width: 40%;
-        # height: 100px;
-        z-index: 1000;
-        bottom: 0;
-    }
-            
-        .topnav1 a {
-        float: right;
-        color: white;
-        text-align: center;
-        padding: 6px 14px;
-        text-decoration: none;
-        font-size: 12px;
-        border-radius: 6px;
-        margin-left: 10px;
-        background-color: #1e293b;
-        transition: 0.3s;
-        
-    }
+def get_base64(file_path):
+    with open(file_path, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
-    .topnav h1 {
-        color: #10b981;
-        float: left;
-        font-size: 24px;
-        margin: 0;
-        padding-top: 5px;
-        top: 0;
-    }
-    .topnav a {
-        float: right;
-        color: white;
-        text-align: center;
-        padding: 6px 14px;
-        text-decoration: none;
-        font-size: 16px;
-        border-radius: 6px;
-        margin-left: 10px;
-        background-color: #1e293b;
-        transition: 0.3s;
-    }
-    .topnav a:hover {
-        background-color: #10b981;
-        color: black;
-    }
+def load_chat_history():
+    if os.path.exists("chat_history.json"):
+        with open("chat_history.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    else:
+        return [("bot", "Welcome to IntelliMed AI Chat! How can I assist you today?")]
 
-            
+def save_chat_history(chat_history):
+    with open("chat_history.json", "w", encoding="utf-8") as f:
+        json.dump(chat_history, f)
+
+# AI Response Functions
+def get_gemini_response(message):
+    gemini_model = genai.GenerativeModel(model_name="models/gemini-2.5-flash-preview-04-17")
+    response = gemini_model.generate_content(message)
+    return response.text
+
+# Master AI Selector
+def get_ai_response(selected_ai, user_message):
+    if selected_ai == "Gemini":
+        return get_gemini_response(user_message)
+    else:
+        return "Error: AI model not recognized!"
     
-       input[type="radio"]:checked + div > div {
-        # background-color: #FFFFFF !important;
-        color: #10b981 !important;
-        font-weight: bold;
-        font-size: 20px !important;
-    }
 
 
-    input[type="radio"]:not(:checked) + div > div {
-        # background-color: #FFFFFF !important;
-        color: white !important;
-        font-weight: bold;
-        font-size: 18px !important;
-    }
+# -- Prediction Form
+def prediction_form(disease_name, features, model, scaler=None):
+    st.subheader(f"🩺 {disease_name} Prediction Form")
 
-    </style>
-""", unsafe_allow_html=True)
+    with st.form(f"{disease_name.lower()}_form", clear_on_submit=False):
+        st.markdown("### Fill the patient details:")
+        cols = st.columns(3)
+        inputs = {}
 
-# ---- NAVIGATION ----
+        for i, feature in enumerate(features):
+            with cols[i % 3]:
+                f_key = feature.strip()
+                if f_key in FEATURE_INPUTS:
+                    ftype, *params = FEATURE_INPUTS[f_key]
+
+                    if ftype == 'slider':
+                        min_val, max_val, step = params
+
+                        # Convert to uniform types (int or float)
+                        if isinstance(step, float) or isinstance(min_val, float) or isinstance(max_val, float):
+                            inputs[f_key] = st.slider(f_key, float(min_val), float(max_val), float(min_val), step=float(step))
+                        else:
+                            inputs[f_key] = st.slider(f_key, int(min_val), int(max_val), int(min_val), step=int(step))
+
+                    elif ftype == 'select':
+                        inputs[f_key] = st.selectbox(f_key, params[0])
+
+                else:
+                    # Fallback to text input
+                    inputs[f_key] = st.text_input(f_key)
+
+        submitted = st.form_submit_button("🔍 Predict")
+
+    if submitted:
+        # Convert 'yes'/'no'/'male'/'female' etc. to numeric values
+        def convert(val):
+            if isinstance(val, str):
+                val = val.lower()
+                if val in ['yes', 'present', 'male', 'normal']: return 1
+                if val in ['no', 'notpresent', 'female', 'abnormal']: return 0
+            return val
+
+        input_values = [convert(inputs[feature.strip()]) for feature in features]
+
+        # data = np.array([input_values], dtype=float, )
+        data = pd.DataFrame([input_values], columns=features)
+        if scaler:
+            data = scaler.transform(data)
+
+        prediction = model.predict(data)[0]
+        confidence = model.predict_proba(data)[0][1] if hasattr(model, 'predict_proba') else 0.0
+        diagnosis = "Positive" if prediction == 1 else "Negative"
+
+        st.session_state['prediction_result'] = {
+            'title': disease_name,
+            'inputs': inputs,
+            'diagnosis': diagnosis,
+            'confidence': f"{confidence:.2%}"
+        }
+
+        st.success(f"Diagnosis: {diagnosis} (Confidence: {confidence:.2%})")
+        st.balloons()
+
+        # Call your report display logic
+        show_medical_report()
+
+
+# -- Medical Report Page
+def show_medical_report():
+    result = st.session_state.get('prediction_result', {})
+    if not result:
+        st.error("No diagnosis found. Please submit the form first.")
+        return
+
+    st.title("🏥 Medical Diagnosis Report")
+    st.write("Diagnosed by **IntelliMed AI System**")
+
+    st.markdown("---")
+    st.subheader(f"🧾 Disease: {result['title']}")
+    st.subheader(f"Diagnosis Result: {'✅' if result['diagnosis'] == 'Negative' else '⚠️'} {result['diagnosis']}")
+    st.subheader(f"Confidence Score: {result['confidence']}")
+    st.markdown("---")
+
+    st.markdown("### Patient Provided Details:")
+    for k, v in result['inputs'].items():
+        st.write(f"**{k}**: {v}")
+
+    st.markdown("---")
+
+    col1, col2, col3 = st.columns([1,1,1])
+    if col1.button("🔁 Predict Again"):
+        st.session_state['page'] = "form"
+    if col3.button("🏠 Go Home"):
+        st.session_state['page'] = "home"
+
+
+
+# ---------------------- UI Section ----------------------
+
+# Inject Sidebar Theme
+st.markdown(open('sidebar.html').read(), unsafe_allow_html=True)
+
+# Load Logo
+img_base64 = get_base64("./static/logo.png")
+
 query_params = st.query_params
-page = query_params.get("page", "home")
+page = query_params.get("page", ["home"])[0]  # Default to "home" if not present
 
-# ---- Navbar with routing ----
+
+# ---- Navbar ----
 st.markdown(f"""
 <div class="topnav">
     <h1>🩺 IntelliMed</h1>
-    <a href="?page=about">About</a>
     <a href="?page=home">Home</a>
+    <a href="?page=about">About</a>
+
 </div>
 """, unsafe_allow_html=True)
 
-# ---- Sidebar (show only on Home page) ----
+# Sidebar
+with st.sidebar:
+    st.sidebar.image("./static/logo.png", width=150)
+    st.sidebar.markdown("---")
+
+model_choice = ""
+radio_button = st.sidebar.radio("", ["🤖 ChatBot", "🩺 Disease Diagnose"])
+
+
+# Define all feature input types and constraints
+FEATURE_INPUTS = {
+    # Diabetes
+    'Pregnancies': ('slider', 0, 20, 1),
+    'Glucose': ('slider', 0, 300, 1),
+    'BloodPressure': ('slider', 0, 200, 1),
+    'SkinThickness': ('slider', 0, 100, 1),
+    'Insulin': ('slider', 0, 900, 1),
+    'BMI': ('slider', 0.0, 70.0, 0.1),
+    'DiabetesPedigreeFunction': ('slider', 0.0, 2.5, 0.01),
+    'Age': ('slider', 0, 120, 1),
+
+    # Kidney
+    'age': ('slider', 0, 100, 1),
+    'bp': ('slider', 0, 200, 1),
+    'al': ('slider', 0, 5, 1),
+    'su': ('slider', 0, 5, 1),
+    'rbc': ('select', ['normal', 'abnormal']),
+    'pc': ('select', ['normal', 'abnormal']),
+    'pcc': ('select', ['present', 'notpresent']),
+    'ba': ('select', ['present', 'notpresent']),
+    'bgr': ('slider', 0, 500, 1),
+    'bu': ('slider', 0, 200, 1),
+    'sc': ('slider', 0.0, 20.0, 0.1),
+    'pot': ('slider', 0.0, 10.0, 0.1),
+    'wc': ('slider', 0, 20000, 100),
+    'htn': ('select', ['yes', 'no']),
+    'dm': ('select', ['yes', 'no']),
+    'cad': ('select', ['yes', 'no']),
+    'pe': ('select', ['yes', 'no']),
+    'ane': ('select', ['yes', 'no']),
+
+    # Heart
+    'sex': ('select', ['male', 'female']),
+    'cp': ('slider', 0, 3, 1),
+    'trestbps': ('slider', 80, 200, 1),
+    'chol': ('slider', 100, 600, 1),
+    'fbs': ('select', ['yes', 'no']),
+    'restecg': ('slider', 0, 2, 1),
+    'thalach': ('slider', 60, 220, 1),
+    'exang': ('select', ['yes', 'no']),
+    'oldpeak': ('slider', 0.0, 6.0, 0.1),
+    'slope': ('slider', 0, 2, 1),
+    'ca': ('slider', 0, 4, 1),
+    'thal': ('slider', 0, 3, 1),
+
+    # Hypertension
+    'bmi': ('slider', 10.0, 50.0, 0.1),
+    'smoking': ('select', ['yes', 'no']),
+    'exercise': ('select', ['yes', 'no']),
+    'alcohol': ('select', ['yes', 'no']),
+
+    # Breast
+    'mean_radius': ('slider', 5.0, 30.0, 0.1),
+    'mean_texture': ('slider', 5.0, 40.0, 0.1),
+    'mean_perimeter': ('slider', 30.0, 200.0, 0.1),
+    'mean_area': ('slider', 100.0, 2500.0, 1.0),
+    'mean_smoothness': ('slider', 0.05, 0.2, 0.001),
+    'compactness_mean': ('slider', 0.0, 1.0, 0.01),
+    'concavity_mean': ('slider', 0.0, 1.0, 0.01),
+    'concave points_mean': ('slider', 0.0, 0.5, 0.01),
+    'symmetry_mean': ('slider', 0.1, 0.5, 0.01),
+    'fractal_dimension_mean': ('slider', 0.01, 0.2, 0.001),
+
+    # Lung
+    'GENDER': ('select', ['Male', 'Female']),
+    'AGE': ('slider', 10, 100, 1),
+    'SMOKING': ('select', ['Yes', 'No']),
+    'YELLOW_FINGERS': ('select', ['Yes', 'No']),
+    'ANXIETY': ('select', ['Yes', 'No']),
+    'PEER_PRESSURE': ('select', ['Yes', 'No']),
+    'CHRONIC_DISEASE': ('select', ['Yes', 'No']),
+    'FATIGUE': ('select', ['Yes', 'No']),
+    'ALLERGY': ('select', ['Yes', 'No']),
+    'WHEEZING': ('select', ['Yes', 'No']),
+    'ALCOHOL_CONSUMING': ('select', ['Yes', 'No']),
+    'COUGHING': ('select', ['Yes', 'No']),
+    'SHORTNESS_OF_BREATH': ('select', ['Yes', 'No']),
+    'SWALLOWING_DIFFICULTY': ('select', ['Yes', 'No']),
+    'CHEST_PAIN': ('select', ['Yes', 'No']),
+
+    # Liver
+    'Gender': ('select', ['Male', 'Female']),
+    'Total_Bilirubin': ('slider', 0.0, 10.0, 0.1),
+    'Alkaline_Phosphotase': ('slider', 50, 3000, 1),
+    'Alamine_Aminotransferace': ('slider', 0, 2000, 1),
+    'Aspartate_Amino': ('slider', 0, 2000, 1),
+    'Protien': ('slider', 2.0, 10.0, 0.1),
+    'Albumin': ('slider', 1.0, 6.0, 0.1),
+    'Albumin_Globulin_ratio': ('slider', 0.0, 3.0, 0.1)
+}
+
+
+
+
+
+
 if page == "home":
-    # st.sidebar.image("https://i.ibb.co/7QpKsCX/user.png", width=75)
-    st.sidebar.image("./static/logo.png", width=200)
-    # st.sidebar.markdown('<div class="sidebar-title">IntelliMed</div>', unsafe_allow_html=True)
-    st.sidebar.title("📋 Navigation")
-    # st.sidebar.header("Choose Disease Model or Chatbot")
-
-    
-    # Add model choice dropdown and chatbot option
-    # model_choice = st.sidebar.selectbox("Select Option", [
-    #     "Choose Model", "Diabetes", "Kidney Disease", "Heart Disease", "Hypertension",
-    #     "Breast Cancer", "Lung Cancer", "Liver Disease", "ChatBot"
-    # ])
-
-    model_choice = []
-    # Tabs/Menu
-    rd = st.sidebar.radio("", ["🤖 ChatBot","🩺 Disease Diagnose", "🩺 Services", "📬 Contact", "⚙️ Settings"])
-        
-
-    # if rd == "🤖 ChatBot":
-    #     choose_ai = st.sidebar.selectbox("Choose AI", ["ChatBot", "Voice Assistant"])
-        # st.sidebar.info("Chatbot is under development. Stay tuned!")
-    def get_bot_response(message):
-        response = model.generate_content(message)
-        return response.text
-
-    if rd == "🤖 ChatBot":
-        choose_ai = st.sidebar.selectbox("Choose AI", ["ChatBot (Gemini)", "Voice Assistant"])
-        
-        # st.subheader("💬 IntelliMed ChatBot")
-
-        # if "chat_history" not in st.session_state:
-        #     st.session_state.chat_history = []
-
-        # user_input = st.text_input("👨‍⚕️ Ask something medical...")
-
-        # if user_input:
-        #     st.session_state.chat_history.append(("You", user_input))
-        #     bot_reply = get_bot_response(user_input)
-        #     st.session_state.chat_history.append(("Bot", bot_reply))
-
-        # for sender, msg in st.session_state.chat_history:
-        #     if sender == "You":
-        #         st.markdown(f"**🧑 You:** {msg}")
-        #     else:
-        #         st.markdown(f"**🤖 Bot:** {msg}")
 
 
-
+    if radio_button == "🤖 ChatBot":
 
         
-        # st.markdown("""
-        #     <style>
-        #     # .chat-box {
-        #     #     height: 450px;
-        #     #     overflow-y: auto;
-        #     #     border: 2px solid #d3d3d3;
-        #     #     border-radius: 12px;
-        #     #     padding: 10px;
-        #     #     background-color: #f0f2f6;
-        #     #     margin-bottom: 10px;
-        #     # }
-        #     .message {
-        #         padding: 8px 12px;
-        #         border-radius: 8px;
-        #         # margin: 6px 0;
-        #         max-width: 80%;
-        #         word-wrap: break-word;
-        #         Margin-bottom: 50%;
-        #     }
-        #     .user {
-        #         background-color: #dcf8c6;
-        #         align-self: flex-end;
-        #         text-align: right;
-        #         margin-left: auto;
-        #     }
-        #     .bot {
-        #         background-color: #e2e3e5;
-        #         align-self: flex-start;
-        #         text-align: left;
-        #         margin-right: auto;
-        #     }
-        #     .chat-container {
-        #         display: flex;
-        #         flex-direction: column;
-        #         margin-bottom: 20%;
-        #     }
-        #     </style>
-        # """, unsafe_allow_html=True)
-
-        # # --- Title ---
-        # st.markdown("<h2 style='text-align: center; color: #10b981;'>💬 IntelliMed AI Chat</h2>", unsafe_allow_html=True)
-
-        # # --- Session State ---
-        # if "chat_history" not in st.session_state:
-        #     st.session_state.chat_history = []
-
-        # # --- Chat Display Container ---
-        # with st.container():
-        #     st.markdown("<div class='chat-box chat-container'>", unsafe_allow_html=True)
-            
-        #     for role, msg in st.session_state.chat_history:
-        #         if role == "user":
-        #             st.markdown(f"<div class='message user'>🧑‍💻 {msg}</div>", unsafe_allow_html=True)
-        #         else:
-        #             st.markdown(f"<div class='chat-box message bot'>🤖 {msg}</div>", unsafe_allow_html=True)
-        #     st.markdown("</div>", unsafe_allow_html=True)
-
-        # # --- Input Below Window ---
-        # user_input = st.chat_input("Type your message...")
-
-        # if user_input:
-        #     st.session_state.chat_history.append(("user", user_input))
-        #     with st.spinner("Thinking..."):
-        #         bot_reply = model.generate_content(user_input).text
-        #     st.session_state.chat_history.append(("bot", bot_reply))
-        #     st.rerun()  
-
-
-
-
-
-
-
-
-
-
-        
-
-
-        st.markdown("""
-            <style>
-                    
-                    /* Move chat input box upward */
-                div[data-testid="stChatInput"] {
-                    margin-bottom: 8% !important; /* adjust this value as needed */
-                }
-
-            .chat-box {
-                height: 450px;
-                overflow-y: auto;
-                border: 2px solid #d3d3d3;
-                border-radius: 12px;
-                padding: 10px;
-                background-color: #f0f2f6;
-                margin-bottom: 5px;
-                display: flex;
-                # flex-direction: column;
-            }
-            .message {
-                padding: 8px 12px;
-                border-radius: 8px;
-                max-width: 80%;
-                word-wrap: break-word;
-                margin-bottom: 10px;
-            }
-            .user {
-                background-color: #dcf8c6;
-                align-self: flex-end;
-                text-align: right;
-            }
-            .bot {
-                background-color: #e2e3e5;
-                align-self: flex-start;
-                text-align: left;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-
-        # --- Title ---
-        # st.markdown("<h2 style='text-align: center; color: #10b981;'>💬 IntelliMed AI Chat</h2>", unsafe_allow_html=True)
-
-        # --- Session State ---
         if "chat_history" not in st.session_state:
-            st.session_state.chat_history = []
+            st.session_state.chat_history = load_chat_history()
 
-        # --- Chat Display Container ---
+        choose_ai = st.sidebar.selectbox("Choose AI", ["Gemini"])
+
+        # Chat Display
         with st.container():
             chat_html = "<div class='chat-box'>"
             for role, msg in st.session_state.chat_history:
@@ -347,156 +321,108 @@ if page == "home":
             chat_html += "</div>"
             st.markdown(chat_html, unsafe_allow_html=True)
 
-        # --- Input Below Window ---
+        # Chat Input
         user_input = st.chat_input("Type your message...")
 
         if user_input:
             st.session_state.chat_history.append(("user", user_input))
             with st.spinner("Thinking..."):
-                bot_reply = model.generate_content(user_input).text  # Replace with your model: model.generate_content(user_input).text
+                bot_reply = get_ai_response(choose_ai, user_input)
             st.session_state.chat_history.append(("bot", bot_reply))
+            save_chat_history(st.session_state.chat_history)
             st.rerun()
 
 
 
+    if radio_button == "🩺 Disease Diagnose":
+      
+        model_choice = st.selectbox("Select Option", ["Choose Disease", "Diabetes", "Kidney Disease", "Heart Disease", "Hypertension", "Breast Cancer", "Lung Cancer", "Liver Disease"])
+
+
+        if model_choice == "Choose Disease":
+            # st.info("Please select a disease model from the sidebar.")
+            # Main title
+            st.title("🩺 AI-Based Disease Diagnosis System")
+            st.markdown("Welcome to the AI-powered health screening portal. Select a disease from the sidebar to get started with symptom-based diagnosis.")
+
+            # Introduction
+            st.markdown("""
+            This intelligent diagnostic assistant helps assess your health by predicting potential conditions based on input symptoms and test data.
+            Please note that this is not a substitute for professional medical advice.
+            """)
+
+            # Diseases section
+            st.header("🔍 Diseases Covered")
+
+            diseases = {
+                "🧬 Diabetes": [
+                    "Excessive thirst or hunger",
+                    "Frequent urination",
+                    "Unexplained weight loss",
+                    "Fatigue",
+                    "Blurred vision"
+                ],
+                "❤️ Heart Disease": [
+                    "Chest pain or discomfort",
+                    "Shortness of breath",
+                    "Fatigue with exertion",
+                    "Swelling in legs or feet",
+                    "Irregular heartbeat"
+                ],
+                "🧠 Parkinson's Disease": [
+                    "Tremors",
+                    "Stiffness or muscle rigidity",
+                    "Impaired posture and balance",
+                    "Slurred speech",
+                    "Slow movement"
+                ],
+                "🌬️ Lung Disease (optional)": [
+                    "Chronic cough",
+                    "Wheezing",
+                    "Shortness of breath",
+                    "Chest tightness",
+                    "Frequent respiratory infections"
+                ]
+            }
+
+            cols = st.columns(2)
+
+            for i, (disease, symptoms) in enumerate(diseases.items()):
+                with cols[i % 2]:
+                    st.subheader(disease)
+                    for symptom in symptoms:
+                        st.markdown(f"- {symptom}")
+                    st.markdown("---")
+
+            # Footer
+            st.markdown("""
+            ---
+            🔒 **Note**: Your data is not stored and is used only for model inference during your session.  
+            💡 Start by selecting a disease from the sidebar to input your data and get a prediction.
+            """)
 
 
 
-    elif rd == "🩺 Disease Diagnose":
-            model_choice = st.sidebar.selectbox("Select Option", [
-            "Choose Disease", "Diabetes", "Kidney Disease", "Heart Disease", "Hypertension",
-            "Breast Cancer", "Lung Cancer", "Liver Disease"
-        ])
-            st.sidebar.info("Choose a disease model to predict.")
-    elif rd == "🩺 Services":
-        st.sidebar.info("Services are under development. Stay tuned!")
-    elif rd == "📬 Contact":
-        st.sidebar.info("Contact us at:")
-        st.sidebar.markdown("Email:")
-        st.sidebar.markdown("Phone:")
-        st.sidebar.markdown("LinkedIn:")
-    elif rd == "⚙️ Settings":
-        st.sidebar.info("Settings are under development. Stay tuned!")
-    
+        # Mapping model choices to their corresponding parameters
+        MODEL_MAPPING = {
+            "Diabetes": ("Diabetes", DIABETES_FEATURES, diabetes_model, diabetes_scaler),
+            "Kidney Disease": ("Kidney Disease", KIDNEY_FEATURES, kidney_model, None),
+            "Heart Disease": ("Heart Disease", HEART_FEATURES, heart_model, heart_scaler),
+            "Hypertension": ("Hypertension", HYPERTENSION_FEATURES, hypertension_model, None),
+            "Breast Cancer": ("Breast Cancer", BREAST_FEATURES, breast_model, None),
+            "Lung Cancer": ("Lung Cancer", LUNG_FEATURES, lung_model, None),
+            "Liver Disease": ("Liver Disease", LIVER_FEATURES, liver_model, None),
+        }
 
-    # st.balloons()
-    # st.button("Refresh", key="refresh_button")
+        if model_choice == "Choose Disease":
+            st.info("Please select a disease model from the sidebar.")
 
-# ---- Page: About ----
-if page == "about":
-    st.title("👨‍⚕️ About This Project")
-    st.markdown("""
-    This is a **Smart AI Medical Diagnosis App** developed using **Streamlit** and **Machine Learning** models.
-    
-    It helps predict the risk of diseases like:
-    - 🧬 Diabetes
-    - 🧠 Brain & Heart Diseases
-    - 🫁 Lung Cancer
-    - 🏥 Kidney & Liver Disorders
-    - 🧪 Breast Cancer
-    
-    **Built with 💚 by Subhash Kumar**
-    --- 
-    ### Technologies Used:
-    - Python
-    - Streamlit
-    - Scikit-learn
-    - Joblib
-    - CSS styling
-    """)
-    st.info("🔁 Click **Home** on the top navbar to return.")
-    st.sidebar.image("./static/logo.png", width=200)
-    st.sidebar.markdown('<div class="sidebar-title">IntelliMed</div>', unsafe_allow_html=True)
-    st.sidebar.markdown("Email:")
-    st.sidebar.markdown("Phone:")
-    st.sidebar.markdown("LinkedIn:")
-    st.sidebar.markdown("GitHub:")
-
-    st.balloons()
-    st.sidebar.info("This is a demo version. For full features, please contact the developer.")
-    # st.sidebar.markdown('<div class="sidebar-title">IntelliMed</div>', unsafe_allow_html=True)
-
-# ---- Page: Home ----
-if page == "home":
-    # st.title("Medical Diagnosis with Machine Learning")
-
-    def prediction_form(title, features, model, scaler=None):
-        st.subheader(title)
-        with st.form(f"{title.lower()}_form"):
-            inputs = [st.number_input(f"{feature}", key=f"{title}_{feature}") for feature in features]
-            submit = st.form_submit_button(f"🔍 Predict")
-
-        if submit:
-            data = np.array([inputs])
+        elif model_choice in model_choice:
+            disease_name, features, model, scaler = MODEL_MAPPING[model_choice]
             if scaler:
-                scaled = scaler.transform(data)
+                prediction_form(disease_name, features, model, scaler)
             else:
-                scaled = data
-            pred = model.predict(scaled)[0]
-            prob = model.predict_proba(scaled)[0][1] if hasattr(model, 'predict_proba') else 0.0
-            st.success(f"🩺 Diagnosis: {'Positive' if pred == 1 else 'Negative'} (Confidence: {prob:.2%})")
-            st.balloons()
-
-
-    if model_choice == "Choose Disease":
-        st.info("Please select a disease model from the sidebar.")
-
-    elif model_choice == "Diabetes":
-        prediction_form("Diabetes", DIABETES_FEATURES, diabetes_model, diabetes_scaler)
-    elif model_choice == "Kidney Disease":
-        prediction_form("Kidney Disease", KIDNEY_FEATURES, kidney_model)
-    elif model_choice == "Heart Disease":
-        prediction_form("Heart Disease", HEART_FEATURES, heart_model, heart_scaler)
-    elif model_choice == "Hypertension":
-        prediction_form("Hypertension", HYPERTENSION_FEATURES, hypertension_model)
-    elif model_choice == "Breast Cancer":
-        prediction_form("Breast Cancer", BREAST_FEATURES, breast_model)
-    elif model_choice == "Lung Cancer":
-        prediction_form("Lung Cancer", LUNG_FEATURES, lung_model)
-    elif model_choice == "Liver Disease":
-        prediction_form("Liver Disease", LIVER_FEATURES, liver_model)
-    elif model_choice == "ChatBot":
-        st.subheader("🗣️ Chat with AI")
-        user_input = st.text_input("Ask me anything!")
-        if user_input:
-            st.write(f"Chatbot says: {user_input[::-1]} (This is a placeholder response, implement a real chatbot here!)")
-
-
-
-# ---- NAVIGATION ----
-query_params1 = st.query_params
-page1 = query_params.get("page1", "home1")
-
-# ---- Navbar with routing ----
-st.markdown(f"""
-<div class="topnav1">
-    <a href="?page=about">About</a>
-    <a href="?page=home">Home</a>
-    <a href="?page=home">Project</a>
-</div>
-""", unsafe_allow_html=True)
-
-# st.download_button(
-#     label="Download Report",
-#     data="This is a sample report.",
-#     file_name="report.txt",
-#     mime="text/plain",
-# )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                prediction_form(disease_name, features, model)
 
 
 
