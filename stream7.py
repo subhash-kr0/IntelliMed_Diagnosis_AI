@@ -66,8 +66,8 @@ st.set_page_config(layout='wide', page_icon='🎈', initial_sidebar_state='auto'
 gemini_key = st.secrets["api_keys"]["gemini"]
 genai.configure(api_key=gemini_key)
 # Default Gemini model for general tasks (like initial chat bot, can be overridden)
-gemini_flash_lite_model = genai.GenerativeModel(model_name="models/gemini-1.0-pro") # Using 1.0 pro as 2.0-flash-lite might not exist or be standard
-gemini_image_model = genai.GenerativeModel(model_name="gemini-pro-vision") # For image diagnosis
+gemini_flash_lite_model = genai.GenerativeModel(model_name="models/gemini-2.5-flash-preview-04-17") # Using 1.0 pro as 2.0-flash-lite might not exist or be standard
+gemini_image_model = genai.GenerativeModel(model_name="models/gemini-2.5-flash-preview-04-17") # For image diagnosis
 
 # --- Caching for Model and Scaler Loading ---
 @st.cache_resource
