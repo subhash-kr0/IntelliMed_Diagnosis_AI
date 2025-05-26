@@ -258,7 +258,7 @@ st.markdown(f"""
             background-color: #eef2f7; /* Softer background from first block */
             color: #333;
         }}
-
+        #MainMenu, footer, header {{ visibility: hidden; }}
 
         /* --- Page Container for Content (from first block) --- */
         .block-container {{
