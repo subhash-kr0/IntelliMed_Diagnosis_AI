@@ -20,6 +20,5 @@ dotenv
 asyncio
 xhtml2pdf
 markdown2
-PIL
 
 #-e .
