@@ -1,3 +1,4 @@
+pip=25.0
 pandas
 numpy
 seaborn

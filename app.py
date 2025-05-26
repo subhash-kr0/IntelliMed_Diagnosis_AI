@@ -63,7 +63,8 @@ APP_VERSION = "1.1"
 st.set_page_config(layout='wide', page_icon='🎈', initial_sidebar_state='auto')
 
 # --- API Keys & Model Configuration ---
-gemini_key = st.secrets["api_keys"]["gemini"]
+# gemini_key = st.secrets["api_keys"]["gemini"]
+gemini_key = os.getenv("GEMINI_API_KEY")  #
 genai.configure(api_key=gemini_key)
 # Default Gemini model for general tasks (like initial chat bot, can be overridden)
 gemini_flash_lite_model = genai.GenerativeModel(model_name="models/gemini-2.5-flash-preview-04-17") # Using 1.0 pro as 2.0-flash-lite might not exist or be standard
