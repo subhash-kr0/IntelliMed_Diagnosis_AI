@@ -16,8 +16,8 @@ def get_requirements(file_path:str)->List[str]:
 
 
 setup(
-    name='Intellimed_Diagnosis',
-    version='0.0.1',
+    name='MedDio',
+    version='1.0.0',
     author='Subhash kumar, Soumya Swadhin Sahoo, Tripti',
     author_email='subhashkr855@gmail.com',
     install_requires=get_requirements('requirements.txt'),

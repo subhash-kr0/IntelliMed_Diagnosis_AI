@@ -808,7 +808,7 @@ if current_page == PAGE_HOME:
     st.sidebar.image("./static/logo.png", width=180, caption=f"{APP_NAME} {APP_VERSION}")
     st.sidebar.markdown("---")
     # greeting in sidebar
-    st.sidebar.markdown("#### 👋 Welcome to IntelliMed AI")
+    st.sidebar.markdown("#### 👋 Welcome to MedDio")
     st.sidebar.markdown("Your AI-powered medical diagnosis assistant.")
     st.sidebar.markdown("---")
     st.sidebar.markdown("#### 📚 How to Use")
@@ -818,7 +818,7 @@ if current_page == PAGE_HOME:
     3. **Medical Report**: After diagnosis, download your personalized medical report.
     4. **Feedback**: Share your experience or report issues via our GitHub repository.
     """)
-    st.balloons() # Can be a bit distracting on every home page load
+    st.balloons() 
 
 elif current_page == PAGE_CHATBOT:
     st.sidebar.image("./static/logo.png", width=150)
@@ -1194,7 +1194,7 @@ developer = st.sidebar.radio("", ["Gihub Repo","Tripti","Subhash Kumar", "Soumya
 # Display corresponding contact info
 if developer == "Subhash Kumar":
     st.sidebar.markdown("""
-        **👤 Name:** Subhash Kumar </br>  
+        **👤 Name:** Subhash Kumar</br>  
         **✉️ Email:** subhashkr855@gmail.com</br>
         **💼 LinkedIn:** [subhash-kr0](https://linkedin.com/in/subhash-kr0)</br>
         **💻 GitHub:** [subhash-kro](https://github.com/subhash-kr0)  
