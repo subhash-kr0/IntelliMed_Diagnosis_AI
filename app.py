@@ -13,6 +13,7 @@ from xhtml2pdf import pisa # For HTML to PDF conversion
 import io
 import tensorflow as tf
 
+
 # Standard Library
 import asyncio # Used for Mistral bot
 
@@ -257,7 +258,7 @@ st.markdown(f"""
             background-color: #eef2f7; /* Softer background from first block */
             color: #333;
         }}
-        #MainMenu, footer, header {{ visibility: hidden; }}
+
 
         /* --- Page Container for Content (from first block) --- */
         .block-container {{
