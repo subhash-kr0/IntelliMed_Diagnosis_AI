@@ -1175,6 +1175,9 @@ elif current_page == PAGE_DIAGNOSE:
                         st.markdown(report_content_html, unsafe_allow_html=True)
                         st.success("✅ Stroke analysis report generated successfully!")
 
+                        confidence_value = stroke_probability if stroke_probability > 0.5 else (1 - stroke_probability)
+                        confidence_text = f"{confidence_value:.2%}"
+
                         # PDF Download for Stroke Report
                         pdf_stroke_html = f"""
                         <h1>IntelliMed - Brain Stroke Diagnostic Report</h1>
@@ -1183,8 +1186,7 @@ elif current_page == PAGE_DIAGNOSE:
                         <p><strong>Report Generated:</strong> {report_time_stroke}</p>
                         <hr/>
                         <p><strong>Diagnosis Result (AI Model):</strong> {'Stroke Detected' if stroke_probability > 0.5 else 'No Stroke Detected'}</p>
-                        <p><strong>Confidence/Probability:</strong> {stroke_probability:.2% if stroke_probability > 0.5 else (1-stroke_probability):.2%}</p>
-                        <hr/>
+                        <p><strong>Confidence/Probability:</strong> {confidence_text}</p>                        <hr/>
                         <p><small><i>This is an AI-generated analysis and should be confirmed by a qualified medical professional.</i></small></p>
                         """
                         pdf_stroke_bytes = convert_html_to_pdf_bytes(pdf_stroke_html)
