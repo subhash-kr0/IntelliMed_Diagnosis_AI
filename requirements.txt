@@ -85,7 +85,6 @@ imbalanced-learn==0.13.0
 imblearn==0.0
 importlib_resources==6.5.2
 inflect==7.3.1
-Intellimed_Diagnosis==0.0.1
 isodate==0.6.1
 itsdangerous==2.2.0
 jaraco.collections==5.1.0
