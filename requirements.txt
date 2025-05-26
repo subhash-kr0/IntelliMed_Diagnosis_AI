@@ -33,7 +33,6 @@ cycler==0.12.1
 dacite==1.9.2
 dataclasses-json==0.6.7
 defusedxml==0.7.1
-DiamondPricePrediction==0.0.1
 distro==1.9.0
 dotenv==0.9.9
 etelemetry==0.3.1
