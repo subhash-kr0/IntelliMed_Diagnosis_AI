@@ -8,35 +8,20 @@ import base64
 from datetime import datetime
 import os
 from PIL import Image
-import markdown2 # For converting markdown to HTML for PDF generation
-from xhtml2pdf import pisa # For HTML to PDF conversion
+import markdown2 
+from xhtml2pdf import pisa 
 import io
 import tensorflow as tf
-
-
-# Standard Library
-import asyncio # Used for Mistral bot
-
-# Third-party Libraries
+import asyncio 
 from dotenv import load_dotenv
-# from fpdf import FPDF # For PDF generation in form-based diagnosis report
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import PromptTemplate
 from langchain_huggingface import HuggingFaceEndpoint
-# import fitz
-
 from reportlab.lib.pagesizes import A4
-# from reportlab.pdfgen import canvas
-# from reportlab.lib.styles import getSampleStyleSheet
-# from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
-# from reportlab.lib.units import inch
-from reportlab.lib import colors
-
-
 from reportlab.lib import colors
 
 # Load environment variables
@@ -56,18 +41,16 @@ IMAGE_AI_BRAIN_STROKE = "Brain Stroke"
 CHATBOT_GEMINI = "ChatBot (Gemini)"
 CHATBOT_MISTRAL = "Mistral"
 
-NAV_HEIGHT_PX = 60  # Height of the top navigation bar in pixels
-APP_NAME = "🩺 IntelliMed"
-APP_VERSION = "1.1"
+NAV_HEIGHT_PX = 60  
+APP_NAME = " 🩺 MedDio"
+APP_VERSION = ""
 
 # --- Page Config ---
 st.set_page_config(layout='wide', page_icon='🎈', initial_sidebar_state='auto')
 
 # --- API Keys & Model Configuration ---
-# gemini_key = st.secrets["api_keys"]["gemini"]
 gemini_key = os.getenv("GEMINI_API_KEY")  #
 genai.configure(api_key=gemini_key)
-# Default Gemini model for general tasks (like initial chat bot, can be overridden)
 gemini_flash_lite_model = genai.GenerativeModel(model_name="models/gemini-2.5-flash-preview-04-17") # Using 1.0 pro as 2.0-flash-lite might not exist or be standard
 gemini_image_model = genai.GenerativeModel(model_name="models/gemini-2.5-flash-preview-04-17") # For image diagnosis
 
@@ -140,9 +123,7 @@ FEATURE_INPUTS = {
     'BloodPressure': ('slider', 30, 180, 1), 'SkinThickness': ('slider', 0, 100, 1),
     'Insulin': ('slider', 0, 900, 1), 'BMI': ('slider', 10.0, 70.0, 0.1),
     'DiabetesPedigreeFunction': ('slider', 0.01, 2.5, 0.01), 'Age': ('slider', 1, 120, 1),
-    # KIDNEY (ensure 'age' here uses a different key if global 'Age' is used or ensure context handles it)
-    # Using specific keys like 'kidney_age' could be safer if 'Age' is a common key.
-    # For now, assuming the current structure works with disease-specific feature lists.
+    # KIDNEY 
     'age': ('slider', 1, 100, 1), 'bp': ('slider', 40, 180, 1), 'al': ('slider', 0, 5, 1),
     'su': ('slider', 0, 5, 1), 'rbc': ('select', ['normal', 'abnormal']),
     'pc': ('select', ['normal', 'abnormal']), 'pcc': ('select', ['present', 'notpresent']),
@@ -159,13 +140,11 @@ FEATURE_INPUTS = {
     'thalach': ('slider', 60, 220, 1), 'exang': ('select', ['yes', 'no']),
     'oldpeak': ('slider', 0.0, 6.0, 0.1), 'slope': ('slider', 0, 2, 1),
     'ca': ('slider', 0, 4, 1), 'thal': ('slider', 0, 3, 1),
-    # HYPERTENSION (Note: 'Age' and 'BMI' are correctly listed in HYPERTENSION_FEATURES. 'smoking', 'exercise', 'alcohol' were in FEATURE_INPUTS but not in HYPERTENSION_FEATURES. Added them to HYPERTENSION_FEATURES for consistency if they are indeed features for the model)
-    # Corrected HYPERTENSION_FEATURES if these are used by the model:
-    # HYPERTENSION_FEATURES = ['Age', 'BMI', 'Systolic_BP','Diastolic_BP', 'Total_Cholesterol', 'smoking', 'exercise', 'alcohol']
+    # HYPERTENSION 
     'Systolic_BP': ('slider', 80, 200, 1), 'Diastolic_BP': ('slider', 40, 120, 1),
     'Total_Cholesterol': ('slider', 100, 400, 1),
-    'smoking': ('select', ['yes', 'no']), 'exercise': ('select', ['yes', 'no']), # Added based on original FEATURE_INPUTS
-    'alcohol': ('select', ['yes', 'no']), # Added based on original FEATURE_INPUTS
+    'smoking': ('select', ['yes', 'no']), 'exercise': ('select', ['yes', 'no']),
+    'alcohol': ('select', ['yes', 'no']),
     # BREAST CANCER
     'mean_radius': ('slider', 5.0, 30.0, 0.1), 'mean_texture': ('slider', 5.0, 40.0, 0.1),
     'mean_perimeter': ('slider', 30.0, 200.0, 0.1), 'mean_area': ('slider', 100.0, 2500.0, 1.0),
@@ -199,10 +178,6 @@ FEATURE_INPUTS = {
     'FTI Level': ('slider', 3, 50, 0.1), 'TBG Level': ('slider', 10, 50, 1),
 }
 
-# Correcting LUNG_FEATURES based on typical naming (removing trailing spaces if they were typos)
-LUNG_FEATURES = ['GENDER', 'AGE', 'SMOKING', 'YELLOW_FINGERS', 'ANXIETY', 'PEER_PRESSURE', 'CHRONIC_DISEASE', 'FATIGUE', 'ALLERGY', 'WHEEZING', 'ALCOHOL_CONSUMING', 'COUGHING', 'SHORTNESS_OF_BREATH', 'SWALLOWING_DIFFICULTY', 'CHEST_PAIN']
-
-
 # --- Symptom Data for Multi-Disease Diagnosis (as provided) ---
 diseases_data = {
     'Common Cold': ['runny nose', 'sore throat', 'cough', 'sneezing', 'mild headache', 'fatigue', 'nasal congestion'],
@@ -234,8 +209,6 @@ feature_fullforms = {
 
 
 # --- MODEL_MAPPING (Ensure HYPERTENSION_FEATURES is updated if necessary) ---
-# If 'smoking', 'exercise', 'alcohol' are features for Hypertension model, update HYPERTENSION_FEATURES
-# HYPERTENSION_FEATURES_UPDATED = ['Age', 'BMI', 'Systolic_BP','Diastolic_BP',  'Total_Cholesterol', 'smoking', 'exercise', 'alcohol'] # Example
 MODEL_MAPPING = {
     "Symptom Checker": {"name": "Symptom Checker", "features": [], "model": None, "scaler": None},
     "Diabetes": {"name": "Diabetes", "features": DIABETES_FEATURES, "model": diabetes_model, "scaler": diabetes_scaler},
@@ -369,19 +342,19 @@ st.markdown(f"""
         [data-testid="stSidebar"] .stAlert {{ background-color: #1C2B4A; border-radius: 6px;}}
 
         /* --- Chat Interface (Combined and refined from both blocks) --- */
-        # .chat-box {{ /* Using style from second block primarily, as it has animation and more specifics */
-        #     height: 500px; /* From first block, or adjust as needed */
-        #     overflow-y: auto;
-        #     border-radius: 8px;
-        #     padding: 1.5rem; /* From first block */
-        #     background-color: #ffffff; /* From first block */
-        #     box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Enhanced shadow */
-        #     margin-bottom: 1rem;
-        #     display: flex;
-        #     flex-direction: column;
-        #     gap: 0.8rem;
-        #     animation: fadeIn 0.5s ease-in-out; /* From second block */
-        # }}
+        .chat-box {{ /* Using style from second block primarily, as it has animation and more specifics */
+            height: 500px; /* From first block, or adjust as needed */
+            overflow-y: auto;
+            border-radius: 8px;
+            padding: 1.5rem; /* From first block */
+            background-color: #ffffff; /* From first block */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Enhanced shadow */
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            animation: fadeIn 0.5s ease-in-out; /* From second block */
+        }}
         @keyframes fadeIn {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
 
         .message-container {{ display: flex; max-width: 75%; }}
@@ -479,6 +452,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
+
 # --- Helper Functions ---
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
@@ -559,10 +533,10 @@ def footer():
             }
         </style>
         <div class="footer">
-            🤖 <strong style="color:#ffffff;">MedDio AI</strong> — Revolutionizing Healthcare with Artificial Intelligence 🧠<br>
+            🤖 <strong style="color:#ffffff;">MedDio</strong> — Revolutionizing Healthcare with Artificial Intelligence 🧠<br>
             📍 Built with ❤️ using Streamlit | © 2025 MedDio<br>
-            🔗 <a href="https://github.com/your-repo">GitHub</a> |
-            💼 <a href="https://linkedin.com/in/your-profile">LinkedIn</a>
+            🔗 <a href="https://github.com/subhash-kr0/MedDio">GitHub</a> |
+            💼 <a href="https://linkedin.com/in/subhash-kr0">LinkedIn</a>
         </div>
     """, unsafe_allow_html=True)
 
@@ -1215,37 +1189,37 @@ st.sidebar.markdown("---")
 # Sidebar for developer contact info
 st.sidebar.markdown("#### 👨‍💻 Contact Developer")
 
-developer = st.sidebar.radio("", ["Gihub Repo","Tripti","Subhash Kumar", "Soumya"])
+developer = st.sidebar.radio("", ["Gihub Repo","Tripti","Subhash Kumar", "Soumya Sahoo"], key="developer_contact_select")
 
 # Display corresponding contact info
 if developer == "Subhash Kumar":
     st.sidebar.markdown("""
-        **👤 Name:** Subhash Kumar  
-        **✉️ Email:** aashu@example.com  
-        **💼 LinkedIn:** [linkedin.com/in/aashukarn](https://linkedin.com/in/aashukarn)  
-        **💻 GitHub:** [github.com/aashukarn](https://github.com/aashukarn)  
+        **👤 Name:** Subhash Kumar </br>  
+        **✉️ Email:** subhashkr855@gmail.com</br>
+        **💼 LinkedIn:** [subhash-kr0](https://linkedin.com/in/subhash-kr0)</br>
+        **💻 GitHub:** [subhash-kro](https://github.com/subhash-kr0)  
     """, unsafe_allow_html=True)
 
 elif developer == "Tripti":
     st.sidebar.markdown("""
-        **👤 Name:** Tripti 
-        **✉️ Email:** priya@example.com  
-        **💼 LinkedIn:** [linkedin.com/in/priyabhatiya](https://linkedin.com/in/priyabhatiya)  
-        **💻 GitHub:** [github.com/priyabhatiya](https://github.com/priyabhatiya)  
+        **👤 Name:** Tripti </br>
+        **✉️ Email:** vermatripti547@gmail.com  
+        **💼 LinkedIn:** [triptiverma310](https://linkedin.com/in/triptiverma310)</br>
+        **💻 GitHub:** [Triptiverma003](https://github.com/Triptiverma003)  
     """, unsafe_allow_html=True)
 
-elif developer == "Soumya":
+elif developer == "Soumya Sahoo":
     st.sidebar.markdown("""
-        **👤 Name:** Soumya 
-        **✉️ Email:** rahul@example.com  
-        **💼 LinkedIn:** [linkedin.com/in/rahulmehta](https://linkedin.com/in/rahulmehta)  
-        **💻 GitHub:** [github.com/rahulmehta](https://github.com/rahulmehta)                         
+        **👤 Name:** Soumya</br>
+        **✉️ Email:** soumyasahoo.2907@gmail.com</br>
+        **💼 LinkedIn:** [0xsoumya](https://linkedin.com/in/0xsoumya)</br>
+        **💻 GitHub:** [0XSoumya](https://github.com/0XSoumya)                         
     """, unsafe_allow_html=True)
 
 elif developer == "Gihub Repo":
     st.sidebar.markdown("""
         **👤 GitHub Repository:**  
-        [MedDio AI]([github.com/rahulmehta](https://github.com/subhash-kr0)
+        [MedDio](https://github.com/subhash-kr0/MedDio)
         """, unsafe_allow_html=True)
     
 st.sidebar.info("This application is for educational and demonstrative purposes. It is not a substitute for professional medical advice.")
