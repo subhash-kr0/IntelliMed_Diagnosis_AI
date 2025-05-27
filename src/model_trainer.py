@@ -1,5 +1,3 @@
-# File: automated_disease_diagnosis/src/model_trainer.py
-# =========================================
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
@@ -10,7 +8,6 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
-
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, classification_report
 import joblib
@@ -69,8 +66,7 @@ def train_and_evaluate_models(X_train: pd.DataFrame, y_train: pd.Series, X_test:
     for name, model in models_to_try.items():
         start_time = time.time()
         print(f"\nTraining {name}...")
-        
-        # Use StratifiedKFold for classification
+
         cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=42) # Reduced splits for speed
         
         scoring_metric = 'f1_weighted' if task_type == "multiclass_classification" or num_classes > 2 else 'f1'
@@ -104,8 +100,6 @@ def train_and_evaluate_models(X_train: pd.DataFrame, y_train: pd.Series, X_test:
                  except ValueError as e: # Handle cases where roc_auc_score might fail for multiclass (e.g. not all classes in y_pred_proba)
                      print(f"Warning: ROC AUC for multiclass {name} failed: {e}")
                      roc_auc_test = None
-
-
             model_results = {
                 "model_name": name,
                 "best_params": grid_search.best_params_,
@@ -120,8 +114,6 @@ def train_and_evaluate_models(X_train: pd.DataFrame, y_train: pd.Series, X_test:
             }
             results.append(model_results)
             print(f"{name} trained. Test F1: {f1_test:.4f}, Test ROC AUC: {roc_auc_test if roc_auc_test is not None else 'N/A'}")
-
-            # Update best model based on F1 score (or ROC AUC for binary)
             current_metric_for_selection = roc_auc_test if scoring_metric == 'roc_auc' and roc_auc_test is not None else f1_test
 
             if current_metric_for_selection > best_f1_overall: # best_f1_overall now stores the best primary metric
@@ -145,6 +137,5 @@ def train_and_evaluate_models(X_train: pd.DataFrame, y_train: pd.Series, X_test:
         print(f"Best model saved to: {model_path}")
     else:
         print("\nNo model was successfully trained and selected.")
-        model_path = None
-        
+        model_path = None   
     return results, best_model_name, best_model_overall, model_path

@@ -1,6 +1,3 @@
-# =========================================
-# File: automated_disease_diagnosis/src/feature_engineer.py
-# =========================================
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
@@ -53,7 +50,7 @@ def preprocess_features(df: pd.DataFrame, target_column: str, task_type: str):
     )
     
     # Split data BEFORE applying the preprocessor fit to avoid data leakage
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y if task_type != "regression" and y.nunique() > 1 else None) # Stratify for classification
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y if task_type != "regression" and y.nunique() > 1 else None) 
 
     # Fit the preprocessor on the training data and transform both train and test
     X_train_processed = preprocessor.fit_transform(X_train)

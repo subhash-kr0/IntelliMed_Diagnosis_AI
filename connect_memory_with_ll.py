@@ -1,12 +1,10 @@
 import os
-
 from langchain_huggingface import  HuggingFaceEndpoint
 from langchain_core.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
-
 
 load_dotenv(verbose=True)
 HF_TOKEN = os.getenv("HF_TOKEN")

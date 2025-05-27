@@ -1,6 +1,3 @@
-# =========================================
-# File: automated_disease_diagnosis/src/data_loader.py
-# =========================================
 import pandas as pd
 from pymongo import MongoClient
 import os

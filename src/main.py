@@ -5,12 +5,12 @@ import joblib
 from datetime import datetime
 
 # Import from other modules in the src package
-from .data_loader import load_data
-from .task_identifier import identify_task_type
-from .eda_generator import generate_eda_report
-from .feature_engineer import preprocess_features
-from .model_trainer import train_and_evaluate_models
-from .reporter import generate_markdown_report
+from src.data_loader import load_data
+from src.task_identifier import identify_task_type
+from src.eda_generator import generate_eda_report
+from src.feature_engineer import preprocess_features
+from src.model_trainer import train_and_evaluate_models
+from src.reporter import generate_markdown_report
 
 def main():
     parser = argparse.ArgumentParser(description="Automated Disease Diagnosis System")
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     main()
 
 
-
+    
 
 
 

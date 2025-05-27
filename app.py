@@ -31,19 +31,15 @@ load_dotenv()
 PAGE_HOME = "PAGE_HOME"
 PAGE_CHATBOT = "PAGE_CHATBOT"
 PAGE_DIAGNOSE = "PAGE_DIAGNOSE"
-
 DIAGNOSE_MODE_FORM = "Form Based"
 DIAGNOSE_MODE_IMAGE = "Image Based"
-
 IMAGE_AI_GEMINI = "Gemini"
 IMAGE_AI_BRAIN_STROKE = "Brain Stroke"
-
 CHATBOT_GEMINI = "ChatBot (Gemini)"
 CHATBOT_MISTRAL = "Mistral"
-
 NAV_HEIGHT_PX = 60  
 APP_NAME = " 🩺 MedDio"
-APP_VERSION = ""
+APP_VERSION = "1.0.0"
 
 # --- Page Config ---
 st.set_page_config(layout='wide', page_icon='🎈', initial_sidebar_state='auto')
@@ -51,8 +47,8 @@ st.set_page_config(layout='wide', page_icon='🎈', initial_sidebar_state='auto'
 # --- API Keys & Model Configuration ---
 gemini_key = os.getenv("GEMINI_API_KEY")  #
 genai.configure(api_key=gemini_key)
-gemini_flash_lite_model = genai.GenerativeModel(model_name="models/gemini-2.5-flash-preview-04-17") # Using 1.0 pro as 2.0-flash-lite might not exist or be standard
-gemini_image_model = genai.GenerativeModel(model_name="models/gemini-2.5-flash-preview-04-17") # For image diagnosis
+gemini_flash_lite_model = genai.GenerativeModel(model_name="models/gemini-2.5-flash-preview-04-17")
+gemini_image_model = genai.GenerativeModel(model_name="models/gemini-2.5-flash-preview-04-17") 
 
 # --- Caching for Model and Scaler Loading ---
 @st.cache_resource
@@ -109,11 +105,16 @@ brainStrokemodel = load_brainstroke_tf_model()
 DIABETES_FEATURES = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age']
 KIDNEY_FEATURES = ['age', 'bp', 'al', 'su', 'rbc', 'pc', 'pcc', 'ba', 'bgr', 'bu', 'sc', 'pot', 'wc', 'htn', 'dm', 'cad', 'pe', 'ane']
 HEART_FEATURES = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach','exang','oldpeak','slope','ca','thal']
-HYPERTENSION_FEATURES = ['Age', 'BMI', 'Systolic_BP','Diastolic_BP',  'Total_Cholesterol'] # Note: Original FEATURE_INPUTS had 'smoking', 'exercise', 'alcohol' for Hypertension, but HYPERTENSION_FEATURES does not. This might be a mismatch to check.
-BREAST_FEATURES = ['mean_radius', 'mean_texture', 'mean_perimeter', 'mean_area', 'mean_smoothness', 'compactness_mean', 'concavity_mean', 'concave points_mean', 'symmetry_mean', 'fractal_dimension_mean']
-LUNG_FEATURES = ['GENDER', 'AGE', 'SMOKING', 'YELLOW_FINGERS', 'ANXIETY', 'PEER_PRESSURE', 'CHRONIC_DISEASE', 'FATIGUE', 'ALLERGY', 'WHEEZING', 'ALCOHOL_CONSUMING', 'COUGHING', 'SHORTNESS_OF_BREATH', 'SWALLOWING_DIFFICULTY', 'CHEST_PAIN']
-LIVER_FEATURES = ['Age', 'Gender', 'Total_Bilirubin', 'Alkaline_phosphate', 'Alamine_Aminotransferace', 'Aspartate_Amino', 'Protien', 'Albumin', 'Albumin_Globulin_ratio']
-THYROID_FEATURES = ['Age','Sex','On Thyroxine','Query on Thyroxine','On Antithyroid Meds','Is Sick','Is Pregnant','Had Thyroid Surgery','Had I131 Treatment','Query Hypothyroid','Query Hyperthyroid','On Lithium','Has Goitre','Has Tumor','Psych Condition','TSH Level','T3 Level','TT4 Level','T4U Level','FTI Level', 'TBG Level']
+HYPERTENSION_FEATURES = ['Age', 'BMI', 'Systolic_BP','Diastolic_BP',  'Total_Cholesterol']
+BREAST_FEATURES = ['mean_radius', 'mean_texture', 'mean_perimeter', 'mean_area', 'mean_smoothness', 'compactness_mean', 'concavity_mean', 
+                   'concave points_mean', 'symmetry_mean', 'fractal_dimension_mean']
+LUNG_FEATURES = ['GENDER', 'AGE', 'SMOKING', 'YELLOW_FINGERS', 'ANXIETY', 'PEER_PRESSURE', 'CHRONIC_DISEASE', 'FATIGUE', 'ALLERGY', 'WHEEZING',
+                  'ALCOHOL_CONSUMING', 'COUGHING', 'SHORTNESS_OF_BREATH', 'SWALLOWING_DIFFICULTY', 'CHEST_PAIN']
+LIVER_FEATURES = ['Age', 'Gender', 'Total_Bilirubin', 'Alkaline_phosphate', 'Alamine_Aminotransferace', 'Aspartate_Amino', 'Protien', 'Albumin',
+ 'Albumin_Globulin_ratio']
+THYROID_FEATURES = ['Age','Sex','On Thyroxine','Query on Thyroxine','On Antithyroid Meds','Is Sick','Is Pregnant','Had Thyroid Surgery',
+                    'Had I131 Treatment','Query Hypothyroid','Query Hyperthyroid','On Lithium','Has Goitre','Has Tumor','Psych Condition',
+                    'TSH Level','T3 Level','TT4 Level','T4U Level','FTI Level', 'TBG Level']
 
 
 # --- Feature Input Definitions (as provided, with slight adjustments for consistency if needed) ---
@@ -152,12 +153,12 @@ FEATURE_INPUTS = {
     'concavity_mean': ('slider', 0.01, 1.0, 0.01), 'concave points_mean': ('slider', 0.01, 0.5, 0.01),
     'symmetry_mean': ('slider', 0.1, 0.5, 0.01), 'fractal_dimension_mean': ('slider', 0.01, 0.2, 0.001),
     # LUNG CANCER
-    'GENDER': ('select', ['Male', 'Female']), 'AGE': ('slider', 10, 100, 1), # Note: 'AGE' for Lung vs 'Age' for others
+    'GENDER': ('select', ['Male', 'Female']), 'AGE': ('slider', 10, 100, 1),
     'SMOKING': ('select', ['Yes', 'No']), 'YELLOW_FINGERS': ('select', ['Yes', 'No']),
     'ANXIETY': ('select', ['Yes', 'No']), 'PEER_PRESSURE': ('select', ['Yes', 'No']),
-    'CHRONIC_DISEASE': ('select', ['Yes', 'No']), 'FATIGUE': ('select', ['Yes', 'No']), # 'FATIGUE ' has a space in LUNG_FEATURES, ensure consistency
-    'ALLERGY': ('select', ['Yes', 'No']), 'WHEEZING': ('select', ['Yes', 'No']), # 'ALLERGY ' and 'WHEEZING '
-    'ALCOHOL_CONSUMING': ('select', ['Yes', 'No']), 'COUGHING': ('select', ['Yes', 'No']), # 'COUGHING '
+    'CHRONIC_DISEASE': ('select', ['Yes', 'No']), 'FATIGUE': ('select', ['Yes', 'No']), 
+    'ALLERGY': ('select', ['Yes', 'No']), 'WHEEZING': ('select', ['Yes', 'No']),
+    'ALCOHOL_CONSUMING': ('select', ['Yes', 'No']), 'COUGHING': ('select', ['Yes', 'No']), 
     'SHORTNESS_OF_BREATH': ('select', ['Yes', 'No']), 'SWALLOWING_DIFFICULTY': ('select', ['Yes', 'No']),
     'CHEST_PAIN': ('select', ['Yes', 'No']),
     # LIVER
@@ -195,16 +196,36 @@ diseases_data = {
 # --- Feature Full Forms (as provided) ---
 feature_fullforms = {
     # 'Choose Disease': {'Select the disease you want to diagnose': 'Please choose one disease from the list'},
-    'Symptom Checker': {'1': "Instant health insights based on your symptoms.",'2':"Check what might be causing your symptoms in seconds.",'3':"Smart diagnosis support from the symptoms you enter."
-     ,'4':"Input your symptoms. Get possible conditions instantly."},
-    'Diabetes': {'Pregnancies': 'Number of times pregnant', 'Glucose': 'Plasma glucose concentration', 'BloodPressure': 'Diastolic blood pressure (mm Hg)', 'SkinThickness': 'Triceps skin fold thickness (mm)', 'Insulin': '2-Hour serum insulin (mu U/ml)', 'BMI': 'Body Mass Index', 'DiabetesPedigreeFunction': 'Diabetes pedigree function', 'Age': 'Age in years'},
-    'Kidney Disease': {'age': 'Age', 'bp': 'Blood Pressure', 'al': 'Albumin', 'su': 'Sugar', 'rbc': 'Red Blood Cells', 'pc': 'Pus Cell', 'pcc': 'Pus Cell Clumps', 'ba': 'Bacteria', 'bgr': 'Blood Glucose Random', 'bu': 'Blood Urea', 'sc': 'Serum Creatinine', 'pot': 'Potassium', 'wc': 'White Blood Cell Count', 'htn': 'Hypertension', 'dm': 'Diabetes Mellitus', 'cad': 'Coronary Artery Disease', 'pe': 'Pedal Edema', 'ane': 'Anemia'},
-    'Heart Disease': {'age': 'Age', 'sex': 'Sex', 'cp': 'Chest Pain Type', 'trestbps': 'Resting Blood Pressure', 'chol': 'Serum Cholesterol', 'fbs': 'Fasting Blood Sugar > 120 mg/dl', 'restecg': 'Resting ECG Results', 'thalach': 'Maximum Heart Rate Achieved', 'exang': 'Exercise Induced Angina', 'oldpeak': 'ST Depression', 'slope': 'Slope of ST Segment', 'ca': 'Number of Major Vessels Colored', 'thal': 'Thalassemia'},
-    'Hypertension': {'Age':'Age', 'BMI': 'Body Mass Index', 'Systolic_BP': 'Systolic Blood Pressure', 'Diastolic_BP': 'Diastolic Blood Pressure', 'Total_Cholesterol':'Total Cholesterol', 'smoking': 'Smoking Habit', 'exercise': 'Physical Activity', 'alcohol': 'Alcohol Consumption'},
-    'Breast Cancer': {'mean_radius': 'Mean Radius', 'mean_texture': 'Mean Texture', 'mean_perimeter': 'Mean Perimeter', 'mean_area': 'Mean Area', 'mean_smoothness': 'Mean Smoothness', 'compactness_mean': 'Mean Compactness', 'concavity_mean': 'Mean Concavity', 'concave points_mean': 'Mean Concave Points', 'symmetry_mean': 'Mean Symmetry', 'fractal_dimension_mean': 'Mean Fractal Dimension'},
-    'Lung Cancer': {'GENDER': 'Gender', 'AGE': 'Age', 'SMOKING': 'Smoking', 'YELLOW_FINGERS': 'Yellow Fingers', 'ANXIETY': 'Anxiety', 'PEER_PRESSURE': 'Peer Pressure', 'CHRONIC_DISEASE': 'Chronic Disease', 'FATIGUE': 'Fatigue', 'ALLERGY': 'Allergy', 'WHEEZING': 'Wheezing', 'ALCOHOL_CONSUMING': 'Alcohol Consumption', 'COUGHING': 'Coughing', 'SHORTNESS_OF_BREATH': 'Shortness of Breath', 'SWALLOWING_DIFFICULTY': 'Swallowing Difficulty', 'CHEST_PAIN': 'Chest Pain'},
-    'Liver Disease': {'Age': 'Age', 'Gender': 'Gender', 'Total_Bilirubin': 'Total Bilirubin', 'Alkaline_phosphate': 'Alkaline Phosphotase', 'Alamine_Aminotransferace': 'Alamine Aminotransferase', 'Aspartate_Amino': 'Aspartate Aminotransferase', 'Protien': 'Total Protein', 'Albumin': 'Albumin Level', 'Albumin_Globulin_ratio': 'Albumin to Globulin Ratio'},
-    'Thyroid Disease': {'Age': 'Age', 'Sex': 'Sex', 'On Thyroxine': 'On Thyroxine Medication', 'Query on Thyroxine': 'Query on Thyroxine', 'On Antithyroid Meds': 'On Antithyroid Medication', 'Is Sick': 'Currently Sick', 'Is Pregnant': 'Currently Pregnant', 'Had Thyroid Surgery': 'History of Thyroid Surgery', 'Had I131 Treatment': 'History of I131 Treatment', 'Query Hypothyroid': 'Query Hypothyroid', 'Query Hyperthyroid': 'Query Hyperthyroid', 'On Lithium': 'On Lithium Medication', 'Has Goitre': 'Presence of Goitre', 'Has Tumor': 'Presence of Tumor', 'Psych Condition': 'Psychological Condition Reported', 'TSH Level': 'TSH Level', 'T3 Level': 'T3 Level', 'TT4 Level': 'Total T4 Level', 'T4U Level': 'T4U Level', 'FTI Level': 'Free Thyroxine Index (FTI) Level', 'TBG Level': 'TBG Level'}
+    'Symptom Checker': {'1': "Instant health insights based on your symptoms.",'2':"Check what might be causing your symptoms in seconds.",
+                        '3':"Smart diagnosis support from the symptoms you enter.",'4':"Input your symptoms. Get possible conditions instantly."},
+    'Diabetes': {'Pregnancies': 'Number of times pregnant', 'Glucose': 'Plasma glucose concentration', 'BloodPressure': 'Diastolic blood pressure (mm Hg)',
+                  'SkinThickness': 'Triceps skin fold thickness (mm)', 'Insulin': '2-Hour serum insulin (mu U/ml)', 'BMI': 'Body Mass Index', 
+                  'DiabetesPedigreeFunction': 'Diabetes pedigree function', 'Age': 'Age in years'},
+    'Kidney Disease': {'age': 'Age', 'bp': 'Blood Pressure', 'al': 'Albumin', 'su': 'Sugar', 'rbc': 'Red Blood Cells', 'pc': 'Pus Cell', 'pcc': 'Pus Cell Clumps',
+                        'ba': 'Bacteria', 'bgr': 'Blood Glucose Random', 'bu': 'Blood Urea', 'sc': 'Serum Creatinine', 'pot': 'Potassium', 'wc': 'White Blood Cell Count',
+                          'htn': 'Hypertension', 'dm': 'Diabetes Mellitus', 'cad': 'Coronary Artery Disease', 'pe': 'Pedal Edema', 'ane': 'Anemia'},
+    'Heart Disease': {'age': 'Age', 'sex': 'Sex', 'cp': 'Chest Pain Type', 'trestbps': 'Resting Blood Pressure', 'chol': 'Serum Cholesterol', 
+                      'fbs': 'Fasting Blood Sugar > 120 mg/dl', 'restecg': 'Resting ECG Results', 'thalach': 'Maximum Heart Rate Achieved', 
+                      'exang': 'Exercise Induced Angina', 'oldpeak': 'ST Depression', 'slope': 'Slope of ST Segment', 'ca': 'Number of Major Vessels Colored',
+                      'thal': 'Thalassemia'},
+    'Hypertension': {'Age':'Age', 'BMI': 'Body Mass Index', 'Systolic_BP': 'Systolic Blood Pressure', 'Diastolic_BP': 'Diastolic Blood Pressure', 
+                     'Total_Cholesterol':'Total Cholesterol', 'smoking': 'Smoking Habit', 'exercise': 'Physical Activity', 'alcohol': 'Alcohol Consumption'},
+    'Breast Cancer': {'mean_radius': 'Mean Radius', 'mean_texture': 'Mean Texture', 'mean_perimeter': 'Mean Perimeter', 'mean_area': 'Mean Area', 
+                      'mean_smoothness': 'Mean Smoothness', 'compactness_mean': 'Mean Compactness', 'concavity_mean': 'Mean Concavity', 
+                      'concave points_mean': 'Mean Concave Points', 'symmetry_mean': 'Mean Symmetry', 'fractal_dimension_mean': 'Mean Fractal Dimension'},
+    'Lung Cancer': {'GENDER': 'Gender', 'AGE': 'Age', 'SMOKING': 'Smoking', 'YELLOW_FINGERS': 'Yellow Fingers', 'ANXIETY': 'Anxiety', 
+                    'PEER_PRESSURE': 'Peer Pressure', 'CHRONIC_DISEASE': 'Chronic Disease', 'FATIGUE': 'Fatigue', 'ALLERGY': 'Allergy', 'WHEEZING': 'Wheezing', 
+                    'ALCOHOL_CONSUMING': 'Alcohol Consumption', 'COUGHING': 'Coughing', 'SHORTNESS_OF_BREATH': 'Shortness of Breath', 
+                    'SWALLOWING_DIFFICULTY': 'Swallowing Difficulty', 'CHEST_PAIN': 'Chest Pain'},
+    'Liver Disease': {'Age': 'Age', 'Gender': 'Gender', 'Total_Bilirubin': 'Total Bilirubin', 'Alkaline_phosphate': 'Alkaline Phosphotase', 
+                      'Alamine_Aminotransferace': 'Alamine Aminotransferase', 'Aspartate_Amino': 'Aspartate Aminotransferase', 'Protien': 'Total Protein', 
+                      'Albumin': 'Albumin Level', 'Albumin_Globulin_ratio': 'Albumin to Globulin Ratio'},
+    'Thyroid Disease': {'Age': 'Age', 'Sex': 'Sex', 'On Thyroxine': 'On Thyroxine Medication', 'Query on Thyroxine': 'Query on Thyroxine', 
+                        'On Antithyroid Meds': 'On Antithyroid Medication', 'Is Sick': 'Currently Sick', 'Is Pregnant': 'Currently Pregnant', 
+                        'Had Thyroid Surgery': 'History of Thyroid Surgery', 'Had I131 Treatment': 'History of I131 Treatment', 'Query Hypothyroid': 'Query Hypothyroid',
+                          'Query Hyperthyroid': 'Query Hyperthyroid', 'On Lithium': 'On Lithium Medication', 'Has Goitre': 'Presence of Goitre', 
+                          'Has Tumor': 'Presence of Tumor', 'Psych Condition': 'Psychological Condition Reported', 'TSH Level': 'TSH Level', 'T3 Level': 'T3 Level',
+                        'TT4 Level': 'Total T4 Level', 'T4U Level': 'T4U Level', 'FTI Level': 'Free Thyroxine Index (FTI) Level', 'TBG Level': 'TBG Level'}
 }
 
 
@@ -214,7 +235,7 @@ MODEL_MAPPING = {
     "Diabetes": {"name": "Diabetes", "features": DIABETES_FEATURES, "model": diabetes_model, "scaler": diabetes_scaler},
     "Kidney Disease": {"name": "Kidney Disease", "features": KIDNEY_FEATURES, "model": kidney_model, "scaler": None},
     "Heart Disease": {"name": "Heart Disease", "features": HEART_FEATURES, "model": heart_model, "scaler": heart_scaler},
-    "Hypertension": {"name": "Hypertension", "features": HYPERTENSION_FEATURES, "model": hypertension_model, "scaler": None}, # Use HYPERTENSION_FEATURES_UPDATED if applicable
+    "Hypertension": {"name": "Hypertension", "features": HYPERTENSION_FEATURES, "model": hypertension_model, "scaler": None},
     "Breast Cancer": {"name": "Breast Cancer", "features": BREAST_FEATURES, "model": breast_model, "scaler": None},
     "Lung Cancer": {"name": "Lung Cancer", "features": LUNG_FEATURES, "model": lung_model, "scaler": None},
     "Liver Disease": {"name": "Liver Disease", "features": LIVER_FEATURES, "model": liver_model, "scaler": None},
@@ -292,7 +313,6 @@ st.markdown(f"""
              color: white;
              font-weight: 600;
         }}
-
 
         /* --- Sidebar (Styles from second block, enhanced by first if compatible) --- */
         [data-testid="stSidebar"] {{
@@ -545,7 +565,7 @@ def render_home_page():
     st.title(APP_NAME)
     st.subheader("Your Smart AI Medical Diagnosis Assistant")
     st.markdown(f"""
-    IntelliMed AI (Version {APP_VERSION}) leverages machine learning for preliminary insights into health conditions.
+    MedDio (Version {APP_VERSION}) leverages machine learning for preliminary insights into health conditions.
     Analyze data with trained models to predict disease likelihood.
     **Navigate to "Diagnose"** for prediction forms, or use our **"Chatbot"** for health inquiries.
 
@@ -557,7 +577,9 @@ def render_home_page():
 
     disease_names_list = list(MODEL_MAPPING.keys())
     # Consider adding emojis to MODEL_MAPPING for more robust association
-    emojis = ["🩸", "🩺", "❤️", "📈", "🎗️", "🫁", "🌿", "🦋", "🧠", "🔬"] 
+    # emojis = ["🩸", "🩺", "❤️", "📈", "🎗️", "🫁", "🌿", "🦋", "🧠", "🔬"] 
+    emojis = ["🩺", "🩸", "⚕️", "❤️", "💢", "🎀", "🫁", "🏥", "🦋"]
+
 
     num_disease_cols = 3 if len(disease_names_list) >= 3 else len(disease_names_list)
     if num_disease_cols == 0: num_disease_cols = 1 
@@ -866,7 +888,7 @@ elif current_page == PAGE_CHATBOT:
             st.header("Mistral Settings ⚙️")
             HUGGINGFACE_REPO_ID = st.selectbox(
                 "Select Mistral Model Variant",
-                ["mistralai/Mistral-7B-Instruct-v0.3", "HuggingFaceH4/zephyr-7b-beta"], # Add more if available and tested
+                ["mistralai/Mistral-7B-Instruct-v0.3", "HuggingFaceH4/zephyr-7b-beta"],
                 index=0, key="mistral_variant"
             )
             response_temp = st.slider("Response Temperature", 0.0, 1.0, 0.5, 0.1, key="mistral_temp")
@@ -900,7 +922,7 @@ elif current_page == PAGE_CHATBOT:
             )
 
         @st.cache_resource # Cache the LLM resource (depends on repo_id and temp)
-        def load_mistral_llm(_repo_id, _hf_token, _temperature): # Underscore to indicate params are for caching
+        def load_mistral_llm(_repo_id, _hf_token, _temperature): 
             if not _hf_token:
                 st.error("❌ HuggingFace token (HF_TOKEN) not found in environment variables.")
                 return None
@@ -950,10 +972,7 @@ elif current_page == PAGE_CHATBOT:
 
                     with st.chat_message("assistant"):
                         st.markdown(answer_text)
-                        # if sources_docs: # Optionally display sources
-                        #     with st.expander("📚 Source Documents"):
-                        #         for doc_item in sources_docs:
-                        #             st.markdown(f"- **{doc_item.metadata.get('source', 'Unknown')}**: {doc_item.page_content[:150]}...")
+
                     st.session_state.mistral_messages.append({"role": "assistant", "content": answer_text})
                     # No need to save Mistral history to file unless specified
                 except Exception as e:
@@ -1070,7 +1089,8 @@ elif current_page == PAGE_DIAGNOSE:
                 symptoms_img = st.text_area("💬 Symptoms / Observations / Clinical Context")
                 uploaded_mri_image = st.file_uploader("📤 Upload Medical Image (e.g., Brain MRI)", type=["jpg", "jpeg", "png"], key="gemini_img_upload")
                 custom_prompt_img = st.text_area("🔬 Specific question for the AI regarding the image (e.g., 'Look for signs of tumor')", 
-                                                 value="Analyze the provided medical image. Identify and describe any visible abnormalities or signs of disease. List possible diagnoses based on the image. Suggest further clinical steps if appropriate. Provide a concise summary.")
+                                                 value="Analyze the provided medical image. Identify and describe any visible abnormalities or signs of disease. " \
+                                                 "List possible diagnoses based on the image. Suggest further clinical steps if appropriate. Provide a concise summary.")
                 submit_gemini_img = st.form_submit_button("🧪 Diagnose with Gemini Vision")
 
             if submit_gemini_img and uploaded_mri_image and custom_prompt_img:
@@ -1089,7 +1109,8 @@ elif current_page == PAGE_DIAGNOSE:
 
                     User's Specific Question: {custom_prompt_img}
 
-                    Instruction: Based on the image and the context, provide a detailed analysis. Structure your response clearly. If making potential diagnostic observations, state them cautiously and recommend clinical correlation and further professional review.
+                    Instruction: Based on the image and the context, provide a detailed analysis. Structure your response clearly. If making potential diagnostic 
+                    observations, state them cautiously and recommend clinical correlation and further professional review.
                     """
                     with st.spinner("🤖 Gemini Vision is analyzing the image..."):
                         gemini_diagnosis_text = get_gemini_image_diagnosis_response([prompt_details, pil_image])
@@ -1183,8 +1204,6 @@ elif current_page == PAGE_DIAGNOSE:
 
 
 
-
-
 st.sidebar.markdown("---")
 # Sidebar for developer contact info
 st.sidebar.markdown("#### 👨‍💻 Contact Developer")
@@ -1219,16 +1238,9 @@ elif developer == "Soumya Sahoo":
 elif developer == "Gihub Repo":
     st.sidebar.markdown("""
         **👤 GitHub Repository:**  
-        [MedDio](https://github.com/subhash-kr0/MedDio)
+            [MedDio][https://github.com/subhash-kr0/MedDio](https://github.com/subhash-kr0/MedDio)
         """, unsafe_allow_html=True)
     
 st.sidebar.info("This application is for educational and demonstrative purposes. It is not a substitute for professional medical advice.")
 
-
-
-
-# Call the function at the end of your app
-# footer()
-# Close the padded div for content
 st.markdown("</div>", unsafe_allow_html=True)
-

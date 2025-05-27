@@ -22,6 +22,5 @@ xhtml2pdf
 markdown2
 catboost
 pandas-profiling
-xgboostpymongo
 lightgbm
 #-e .
