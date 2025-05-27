@@ -23,4 +23,5 @@ markdown2
 catboost
 pandas-profiling
 lightgbm
+tf-keras
 #-e .
