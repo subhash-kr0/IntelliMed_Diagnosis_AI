@@ -24,4 +24,6 @@ catboost
 pandas-profiling
 lightgbm
 tf-keras
+faiss-gpu
+faiss-cpu
 #-e .
