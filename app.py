@@ -492,14 +492,44 @@ def save_chat_history_to_file(chat_history_data):
     with open("chat_history.json", "w", encoding="utf-8") as f:
         json.dump(chat_history_data, f)
 
-def get_gemini_chat_response(message_text):
-    # Using the general purpose model for chat
+# def get_gemini_chat_response(message_text):
+#     # Using the general purpose model for chat
+#     try:
+#         response = gemini_flash_lite_model.generate_content(message_text)
+#         return response.text
+#     except Exception as e:
+#         st.error(f"Error getting response from Gemini: {e}")
+#         return "Sorry, I encountered an error trying to respond."
+
+
+
+def get_gemini_chat_response(message_text, history=None):
+    """
+    Call Gemini with full chat context (only for medical queries).
+    """
     try:
-        response = gemini_flash_lite_model.generate_content(message_text)
+        if history is None:
+            history = []
+
+        # Build contextual prompt
+        prompt = "You are a helpful and knowledgeable medical assistant. Answer only health, disease, and diagnosis-related queries. If the question is unrelated, politely refuse.\n\n"
+
+        for role, msg in history:
+            if role == "user":
+                prompt += f"User: {msg}\n"
+            else:
+                prompt += f"Assistant: {msg}\n"
+
+        prompt += f"User: {message_text}\nAssistant:"
+
+        response = gemini_flash_lite_model.generate_content(prompt)
         return response.text
+
     except Exception as e:
         st.error(f"Error getting response from Gemini: {e}")
         return "Sorry, I encountered an error trying to respond."
+
+
 
 # For image-based diagnosis using Gemini Pro Vision
 def get_gemini_image_diagnosis_response(prompt_list_with_image):
