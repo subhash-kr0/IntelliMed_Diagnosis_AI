@@ -25,4 +25,4 @@ pandas-profiling
 lightgbm
 tf-keras
 faiss-cpu
-#-e .
+-e .
